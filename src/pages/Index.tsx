@@ -2,7 +2,7 @@ import { Navigation } from "@/components/Navigation";
 import { MembershipCard } from "@/components/MembershipCard";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Shield, Zap, Users } from "lucide-react";
+import { Shield, Zap, Users, Apple } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -55,11 +55,10 @@ const Index = () => {
       <section className="container mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
         <div className="max-w-4xl mx-auto text-center animate-fade-in">
           <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-primary bg-clip-text text-transparent">
-            Welcome to MemberHub
+            Welcome to 피방자리
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Your all-in-one membership platform. Join thousands of members accessing
-            exclusive features and resources.
+            PC방 자리 추천 및 경쟁 PC방 가동률 확인 기능을 제공하는 시스템입니다.
           </p>
           <div className="flex gap-4 justify-center">
             <Button
@@ -79,23 +78,23 @@ const Index = () => {
       {/* Features Section */}
       <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-12">Why Choose Us</h2>
+          <h2 className="text-3xl font-bold text-center mb-12">기능 소개</h2>
           <div className="grid md:grid-cols-3 gap-8">
             {[
               {
-                icon: Shield,
-                title: "Secure & Private",
-                description: "Your data is protected with enterprise-grade security",
+                icon: Users,
+                title: "PC방 이용자",
+                description: "빠른 자리 추천, 실시간 자리 현황 확인",
               },
               {
                 icon: Zap,
-                title: "Lightning Fast",
-                description: "Experience seamless performance and quick access",
+                title: "PC방 관리자",
+                description: "PC방의 가동률 확인, 효율적인 자리 관리",
               },
               {
                 icon: Users,
-                title: "Community First",
-                description: "Join a thriving community of like-minded members",
+                title: "이용자와 관리자 커뮤니티",
+                description: "사용자와 관리자 간의 소통 공간 제공",
               },
             ].map((feature, index) => (
               <div
