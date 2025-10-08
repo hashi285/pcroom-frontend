@@ -1,142 +1,123 @@
+// src/pages/Dashboard.tsx
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import axios from "axios";
 import { Mail, Calendar, Crown } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { User } from "@supabase/supabase-js";
+import { useUser } from "@/context/UserProvider";
+import api from "@/api/axiosInstance";
 
 interface Favorite {
   pcroomId: number;
   nameOfPcroom: string;
-  utilization?: number; // 추가
-};
+  utilization?: number;
+}
 
 interface Pcroom {
   pcroomId: number;
   nameOfPcroom: string;
-  utilization?: number; // optional, 서버에서 받아올 값
+  utilization?: number;
 }
 
 const Dashboard = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [favorites, setFavorites] = useState<Favorite[]>([]);
+  const { user } = useUser();
+  const navigate = useNavigate();
+
   const [pcrooms, setPcrooms] = useState<Pcroom[]>([]);
+  const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 
   const token = localStorage.getItem("jwt");
 
-  // Supabase 세션 가져오기
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
+useEffect(() => {
+    if (!token) {
+      navigate("/auth");
+      return;
+    }
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
+    // ADMIN이면 manager-dashboard로 이동
+    if (user?.role === "ADMIN") {
+      console.log(user?.role + "입니다.")
+      navigate("/manager-dashboard");
+      return;
+    }
+  }, [token, user, navigate]);
 
-    return () => subscription.unsubscribe();
-  }, []);
-
-// 즐겨찾기 가져오기
-const fetchFavorites = async () => {
-  try {
-    const response = await axios.get("http://localhost:8080/favorites", {
-      headers: { Authorization: `Bearer ${token}` },
-      withCredentials: true,
-    });
-
-    // 각 즐겨찾기 피시방의 utilization 가져오기
-    const favoritesWithUtil = await Promise.all(
-      response.data.map(async (fav: Favorite) => {
-        try {
-          const res = await axios.get(
-            `http://localhost:8080/pcrooms/${fav.pcroomId}/utilization`,
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-          return { ...fav, utilization: res.data.utilization };
-        } catch (err) {
-          console.error("Failed to fetch utilization for favorite", fav.pcroomId, err);
-          return { ...fav, utilization: 0 };
-        }
-      })
-    );
-
-    setFavorites(favoritesWithUtil);
-  } catch (error) {
-    console.error("Failed to fetch favorites", error);
-  } finally {
-    setLoading(false);
-  }
-};
-
-  useEffect(() => {
-    fetchFavorites();
-  }, []);
-
-  // PC방 검색
-  const handleSearch = async () => {
+  // 안전한 GET 요청 wrapper
+  const safeApiGet = async (url: string, config = {}) => {
+    if (!token) return null;
     try {
-      const response = await axios.get("http://localhost:8080/pcrooms", {
-        params: { name: search },
-        headers: { Authorization: `Bearer ${token}` },
-        withCredentials: true,
-      });
-
-      interface PcroomResponse {
-        pcroomId: number;
-        nameOfPcroom: string;
+      const res = await api.get(url, config);
+      return res.data;
+    } catch (err: any) {
+      console.error(err);
+      if (err.response?.status === 401) {
+        localStorage.removeItem("jwt");
+        navigate("/auth");
       }
+      return null;
+    }
+  };
 
-      const data: Pcroom[] = (response.data as PcroomResponse[]).map((p) => ({
-        pcroomId: p.pcroomId,
-        nameOfPcroom: p.nameOfPcroom,
-      }));
+  // PC방 목록 가져오기
+  const fetchPcrooms = async () => {
+    const data = await safeApiGet("/pcrooms");
+    if (Array.isArray(data)) setPcrooms(data);
+    else if (data && data.pcrooms && Array.isArray(data.pcrooms)) setPcrooms(data.pcrooms);
+    else setPcrooms([]);
+  };
 
-      // 각 피시방에 대한 utilization fetch
-      const dataWithUtil = await Promise.all(
-        data.map(async (pcroom) => {
-          try {
-            const res = await axios.get(
-              `http://localhost:8080/pcrooms/${pcroom.pcroomId}/utilization`,
-              { headers: { Authorization: `Bearer ${token}` } }
-            );
-            return { ...pcroom, utilization: res.data.utilization };
-          } catch (err) {
-            console.error("Failed to fetch utilization for", pcroom.pcroomId, err);
-            return { ...pcroom, utilization: 0 };
-          }
+  // 즐겨찾기 목록 가져오기
+  const fetchFavorites = async () => {
+    setLoading(true);
+    const data = await safeApiGet("/favorites");
+    if (Array.isArray(data)) {
+      const favoritesWithUtil = await Promise.all(
+        data.map(async (fav: Favorite) => {
+          const utilRes = await safeApiGet(`/pcrooms/${fav.pcroomId}/utilization`);
+          return { ...fav, utilization: utilRes?.utilization ?? 0 };
         })
       );
-
-      setPcrooms(dataWithUtil);
-    } catch (err) {
-      console.error("Failed to search pcrooms", err);
+      setFavorites(favoritesWithUtil);
+    } else {
+      setFavorites([]);
     }
+    setLoading(false);
+  };
+
+  // 초기 로딩
+  useEffect(() => {
+    if (token) {
+      fetchPcrooms();
+      fetchFavorites();
+    }
+  }, [token]);
+
+  // 검색
+  const handleSearch = async () => {
+    const data = await safeApiGet("/pcrooms", { params: { name: search } });
+    if (Array.isArray(data)) setPcrooms(data);
+    else if (data && data.pcrooms && Array.isArray(data.pcrooms)) setPcrooms(data.pcrooms);
+    else setPcrooms([]);
   };
 
   // 즐겨찾기 추가
   const addFavorite = async (pcroomId: number) => {
+    if (!token) return;
     try {
-      await axios.post(`http://localhost:8080/favorites/${pcroomId}`, {}, {
-        headers: { Authorization: `Bearer ${token}` },
-        withCredentials: true,
-      });
+      await api.post(`/favorites/${pcroomId}`);
       fetchFavorites();
     } catch (err) {
-      console.error("Failed to add favorite", err);
+      console.error(err);
     }
   };
 
   // 즐겨찾기 삭제
   const removeFavorite = async (pcroomId: number) => {
+    if (!token) return;
     try {
-      await axios.delete(`http://localhost:8080/favorites/${pcroomId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-        withCredentials: true,
-      });
+      await api.delete(`/favorites/${pcroomId}`);
       fetchFavorites();
     } catch (err) {
       console.error(err);
@@ -148,30 +129,29 @@ const fetchFavorites = async () => {
       <Navigation />
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12">
         <div className="max-w-4xl mx-auto animate-fade-in">
+
           {/* Dashboard Header */}
           <div className="mb-8">
             <h1 className="text-4xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent">
               Welcome to Your Dashboard
             </h1>
-            <p className="text-muted-foreground">
-              Manage your membership and access exclusive features
-            </p>
+            <p className="text-muted-foreground">Manage your membership and access exclusive features</p>
           </div>
 
-          {/* Membership & Account */}
+          {/* 계정 정보 카드 */}
           <div className="grid gap-6 md:grid-cols-2 mb-8">
             <Card className="shadow-subtle hover:shadow-elegant transition-all duration-300">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Crown className="w-5 h-5 text-primary" />
-                  Membership Status
+                  계정 정보
                 </CardTitle>
-                <CardDescription>Your current plan and benefits</CardDescription>
+                <CardDescription>로그인한 관리자 계정 정보</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  <div className="text-2xl font-bold text-primary">Free Tier</div>
-                  <p className="text-sm text-muted-foreground">Upgrade to unlock premium features</p>
+                <div className="space-y-2 text-sm">
+                  <div>Email: {user?.sub ?? "Loading..."}</div>
+                  <div>ROLE: {user?.role ?? "Loading..."}</div>
                 </div>
               </CardContent>
             </Card>
@@ -188,14 +168,14 @@ const fetchFavorites = async () => {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm">
                     <Mail className="w-4 h-4 text-muted-foreground" />
-                    <span className="font-medium">{user?.email}</span>
+                    <span className="font-medium">{user?.sub || "Guest"}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <Calendar className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">
-                      Joined {new Date(user?.created_at || "").toLocaleDateString()}
-                    </span>
-                  </div>
+                  {user?.userId && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Calendar className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">User ID: {user.userId}</span>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -204,7 +184,7 @@ const fetchFavorites = async () => {
           {/* PC방 검색 & 즐겨찾기 추가 */}
           <Card className="shadow-subtle bg-gradient-card border-primary/20 mb-8">
             <CardHeader>
-              <CardTitle>Search PCrooms</CardTitle>
+              <CardTitle>Search Prooms</CardTitle>
               <CardDescription>검색 후 즐겨찾기에 추가할 수 있습니다</CardDescription>
             </CardHeader>
             <CardContent>
@@ -223,15 +203,12 @@ const fetchFavorites = async () => {
                   Search
                 </button>
               </div>
+
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {pcrooms.map((pcroom) => (
                   <Card key={pcroom.pcroomId} className="p-4 hover:bg-accent transition-colors cursor-pointer border border-border">
                     <CardHeader>
                       <CardTitle>{pcroom.nameOfPcroom}</CardTitle>
-                      <CardDescription>
-                        PC방 ID: {pcroom.pcroomId} <br />
-                        가동률: {pcroom.utilization ?? 0}%
-                      </CardDescription>
                     </CardHeader>
                     <CardContent>
                       <button
@@ -260,30 +237,30 @@ const fetchFavorites = async () => {
                 <div className="text-center text-muted-foreground">No favorites yet</div>
               ) : (
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-{favorites.map((fav) => (
-  <Card key={fav.pcroomId} className="p-4 hover:bg-accent transition-colors cursor-pointer border border-border">
-    <CardHeader>
-      <CardTitle>{fav.nameOfPcroom}</CardTitle>
-      <CardDescription>
-        PC방 ID: {fav.pcroomId} <br />
-        가동률: {fav.utilization ?? 0}%
-      </CardDescription>
-    </CardHeader>
-    <CardContent>
-      <button
-        className="text-red-500 text-sm"
-        onClick={() => removeFavorite(fav.pcroomId)}
-      >
-        Remove
-      </button>
-    </CardContent>
-  </Card>
-))}
-
+                  {favorites.map((fav) => (
+                    <Card key={fav.pcroomId} className="p-4 hover:bg-accent transition-colors cursor-pointer border border-border">
+                      <CardHeader>
+                        <CardTitle>{fav.nameOfPcroom}</CardTitle>
+                        <CardDescription>
+                          PC방 ID: {fav.pcroomId} <br />
+                          가동률: {fav.utilization ?? 0}%
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <button
+                          className="text-red-500 text-sm"
+                          onClick={() => removeFavorite(fav.pcroomId)}
+                        >
+                          Remove
+                        </button>
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
               )}
             </CardContent>
           </Card>
+
         </div>
       </main>
     </div>

@@ -8,8 +8,17 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 3000,
+
+    proxy: {
+      "/pcrooms": "http://localhost:8080",
+      "/favorites": "http://localhost:8080",
+      "/auth": "http://localhost:8080",
+      "/manager-favorites": "http://localhost:8080", 
+    },
   },
+
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
+
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
