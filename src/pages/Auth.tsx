@@ -27,7 +27,7 @@ const Auth = () => {
       localStorage.removeItem("jwt");
 
       if (isLogin) {
-        const res = await api.post("/api/login", { email, password });
+        const res = await api.post("/login", { email, password });
         const { token, role } = res.data;
         
 
@@ -44,7 +44,7 @@ const Auth = () => {
         
       } else {
         // 회원가입 시 처리
-        await api.post("/api/signup", { email, password, nickname });
+        await api.post("/signup", { email, password, nickname });
 
         toast({
           title: "Account created!",
