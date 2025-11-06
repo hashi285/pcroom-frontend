@@ -1,26 +1,24 @@
-import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from "axios";
+// src/api/axiosInstance.ts
+import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL, // e.g. http://localhost:8080
-  withCredentials: true,
+  baseURL: "http://localhost:8080",
 });
 
-// 요청 인터셉터: JWT 자동 추가
-api.interceptors.request.use((config: any) => {
+// 요청 시 자동 JWT 헤더 추가
+api.interceptors.request.use((config) => {
   const token = localStorage.getItem("jwt");
-  if (token) {
-    config.headers = config.headers ?? {};
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+  if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
-// 응답 인터셉터: 401 처리
+
+// 응답 실패 시 자동 처리
 api.interceptors.response.use(
-  (res: AxiosResponse) => res,
-  (err: AxiosError) => {
+  (res) => res,
+  (err) => {
     if (err.response?.status === 401) {
       localStorage.removeItem("jwt");
-      window.location.href = "/auth"; // 로그인 페이지로
+      window.location.href = "/auth"; // SPA redirect
     }
     return Promise.reject(err);
   }

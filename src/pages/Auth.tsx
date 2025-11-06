@@ -1,3 +1,4 @@
+// src/pages/Auth.tsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -5,14 +6,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import axios, { AxiosError } from "axios";
+import api from "@/api/axiosInstance";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [nickname, setNickname] = useState(""); 
+  const [nickname, setNickname] = useState("");
   const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -21,23 +23,28 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      if (isLogin) {
-        // JWT 로그인 호출
-        const response = await axios.post("http://localhost:8080/login", { email, password });
-        const { token } = response.data;
+      // 로그인 시 기존 JWT 초기화
+      localStorage.removeItem("jwt");
 
-        // 토큰 저장
+      if (isLogin) {
+        const res = await api.post("/login", { email, password });
+        const { token, role } = res.data;
+        
+
+        // 새 토큰 저장
         localStorage.setItem("jwt", token);
 
         toast({
           title: "Welcome back!",
-          description: "You've successfully signed in.",
+          description: "Signed in successfully",
         });
 
-        navigate("/dashboard");
+        if (role === "ADMIN") navigate("/manager-dashboard");
+        else navigate("/dashboard");
+        
       } else {
-        // 회원가입 호출
-        await axios.post("http://localhost:8080/signup", { email, password, nickname });
+        // 회원가입 시 처리
+        await api.post("/signup", { email, password, nickname });
 
         toast({
           title: "Account created!",
@@ -46,20 +53,10 @@ const Auth = () => {
 
         setIsLogin(true); // 회원가입 후 로그인 화면으로
       }
-    } catch (error: unknown) {
-      let message = "Unknown error occurred";
-
-      if (axios.isAxiosError(error)) {
-        // Axios 에러 처리
-        message = error.response?.data || error.message;
-      } else if (error instanceof Error) {
-        // 일반 JS 에러 처리
-        message = error.message;
-      }
-
+    } catch (err: any) {
       toast({
         title: "Error",
-        description: message,
+        description: err.response?.data || err.message,
         variant: "destructive",
       });
     } finally {
@@ -82,18 +79,39 @@ const Auth = () => {
           <form onSubmit={handleAuth} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
             </div>
 
             {!isLogin && (
               <div className="space-y-2">
                 <Label htmlFor="nickname">Nickname</Label>
-                <Input id="nickname" type="text" placeholder="피방자리유저" value={nickname} onChange={(e) => setNickname(e.target.value)} required />
+                <Input
+                  id="nickname"
+                  type="text"
+                  placeholder="피방자리유저"
+                  value={nickname}
+                  onChange={(e) => setNickname(e.target.value)}
+                  required
+                />
               </div>
             )}
 

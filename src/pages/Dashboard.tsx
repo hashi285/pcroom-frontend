@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Mail, Calendar, Crown } from "lucide-react";
 import { useUser } from "@/context/UserProvider";
 import api from "@/api/axiosInstance";
+import { Button } from "@/components/ui/button";
 
 interface Favorite {
   pcroomId: number;
@@ -27,24 +28,16 @@ const Dashboard = () => {
   const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
-
   const token = localStorage.getItem("jwt");
 
-useEffect(() => {
+  useEffect(() => {
     if (!token) {
       navigate("/auth");
       return;
     }
 
-    // ADMIN이면 manager-dashboard로 이동
-    if (user?.role === "ADMIN") {
-      console.log(user?.role + "입니다.")
-      navigate("/manager-dashboard");
-      return;
-    }
   }, [token, user, navigate]);
 
-  // 안전한 GET 요청 wrapper
   const safeApiGet = async (url: string, config = {}) => {
     if (!token) return null;
     try {
@@ -60,15 +53,13 @@ useEffect(() => {
     }
   };
 
-  // PC방 목록 가져오기
   const fetchPcrooms = async () => {
     const data = await safeApiGet("/pcrooms");
     if (Array.isArray(data)) setPcrooms(data);
-    else if (data && data.pcrooms && Array.isArray(data.pcrooms)) setPcrooms(data.pcrooms);
+    else if (data?.pcrooms && Array.isArray(data.pcrooms)) setPcrooms(data.pcrooms);
     else setPcrooms([]);
   };
 
-  // 즐겨찾기 목록 가져오기
   const fetchFavorites = async () => {
     setLoading(true);
     const data = await safeApiGet("/favorites");
@@ -79,14 +70,13 @@ useEffect(() => {
           return { ...fav, utilization: utilRes?.utilization ?? 0 };
         })
       );
-      setFavorites(favoritesWithUtil);
+      setFavorites(favoritesWithUtil.sort((a, b) => b.pcroomId - a.pcroomId));
     } else {
       setFavorites([]);
     }
     setLoading(false);
   };
 
-  // 초기 로딩
   useEffect(() => {
     if (token) {
       fetchPcrooms();
@@ -94,17 +84,14 @@ useEffect(() => {
     }
   }, [token]);
 
-  // 검색
   const handleSearch = async () => {
     const data = await safeApiGet("/pcrooms", { params: { name: search } });
     if (Array.isArray(data)) setPcrooms(data);
-    else if (data && data.pcrooms && Array.isArray(data.pcrooms)) setPcrooms(data.pcrooms);
+    else if (data?.pcrooms && Array.isArray(data.pcrooms)) setPcrooms(data.pcrooms);
     else setPcrooms([]);
   };
 
-  // 즐겨찾기 추가
   const addFavorite = async (pcroomId: number) => {
-    if (!token) return;
     try {
       await api.post(`/favorites/${pcroomId}`);
       fetchFavorites();
@@ -113,9 +100,7 @@ useEffect(() => {
     }
   };
 
-  // 즐겨찾기 삭제
   const removeFavorite = async (pcroomId: number) => {
-    if (!token) return;
     try {
       await api.delete(`/favorites/${pcroomId}`);
       fetchFavorites();
@@ -125,20 +110,22 @@ useEffect(() => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-6">
       <Navigation />
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12">
-        <div className="max-w-4xl mx-auto animate-fade-in">
+        <div className="max-w-5xl mx-auto animate-fade-in">
 
-          {/* Dashboard Header */}
+          {/* Header */}
           <div className="mb-8">
             <h1 className="text-4xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent">
-              Welcome to Your Dashboard
+              User Dashboard
             </h1>
-            <p className="text-muted-foreground">Manage your membership and access exclusive features</p>
+            <p className="text-muted-foreground">
+              즐겨찾기한 피시방의 정보를 관리할 수 있습니다
+            </p>
           </div>
 
-          {/* 계정 정보 카드 */}
+          {/* 계정 정보 */}
           <div className="grid gap-6 md:grid-cols-2 mb-8">
             <Card className="shadow-subtle hover:shadow-elegant transition-all duration-300">
               <CardHeader>
@@ -146,7 +133,7 @@ useEffect(() => {
                   <Crown className="w-5 h-5 text-primary" />
                   계정 정보
                 </CardTitle>
-                <CardDescription>로그인한 관리자 계정 정보</CardDescription>
+                <CardDescription>로그인한 사용자 계정 정보</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2 text-sm">
@@ -160,20 +147,20 @@ useEffect(() => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Mail className="w-5 h-5 text-primary" />
-                  Account Details
+                  공지사항
                 </CardTitle>
-                <CardDescription>Your profile information</CardDescription>
+                <CardDescription>최신 공지사항 안내</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm">
-                    <Mail className="w-4 h-4 text-muted-foreground" />
-                    <span className="font-medium">{user?.sub || "Guest"}</span>
+                    <Calendar className="w-4 h-4 text-muted-foreground" />
+                    <span className="font-medium">2024-06-15:</span>
+                    <div>공지사항이 등록되었습니다.</div>
                   </div>
                   {user?.userId && (
                     <div className="flex items-center gap-2 text-sm">
-                      <Calendar className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">User ID: {user.userId}</span>
+                      <span className="font-medium">첫 공지사항이 등록됩니다.</span>
                     </div>
                   )}
                 </div>
@@ -181,10 +168,10 @@ useEffect(() => {
             </Card>
           </div>
 
-          {/* PC방 검색 & 즐겨찾기 추가 */}
+          {/* 검색 기능 */}
           <Card className="shadow-subtle bg-gradient-card border-primary/20 mb-8">
             <CardHeader>
-              <CardTitle>Search Prooms</CardTitle>
+              <CardTitle>Search Pcrooms</CardTitle>
               <CardDescription>검색 후 즐겨찾기에 추가할 수 있습니다</CardDescription>
             </CardHeader>
             <CardContent>
@@ -196,28 +183,31 @@ useEffect(() => {
                   placeholder="PC방 이름 검색"
                   className="border p-2 rounded flex-1"
                 />
-                <button
+                <Button
+                  size="lg"
+                  className="bg-gradient-primary shadow-elegant"
                   onClick={handleSearch}
-                  className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/80"
                 >
                   Search
-                </button>
+                </Button>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {pcrooms.map((pcroom) => (
-                  <Card key={pcroom.pcroomId} className="p-4 hover:bg-accent transition-colors cursor-pointer border border-border">
-                    <CardHeader>
-                      <CardTitle>{pcroom.nameOfPcroom}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <button
-                        className="text-green-500 text-sm"
+                  <Card
+                    key={pcroom.pcroomId}
+                    className="p-4 hover:shadow-elegant transition-all duration-300 border border-border"
+                  >
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold text-lg">{pcroom.nameOfPcroom}</h3>
+                      <Button
+                        size="lg"
+                        className="bg-gradient-primary shadow-elegant"
                         onClick={() => addFavorite(pcroom.pcroomId)}
                       >
-                        Add Favorite
-                      </button>
-                    </CardContent>
+                        추가
+                      </Button>
+                    </div>
                   </Card>
                 ))}
               </div>
@@ -228,7 +218,7 @@ useEffect(() => {
           <Card className="shadow-subtle bg-gradient-card border-primary/20">
             <CardHeader>
               <CardTitle>My Favorites</CardTitle>
-              <CardDescription>PC방 즐겨찾기 목록</CardDescription>
+              <CardDescription>PC방 즐겨찾기 목록 (최신 추가순)</CardDescription>
             </CardHeader>
             <CardContent>
               {loading ? (
@@ -238,22 +228,28 @@ useEffect(() => {
               ) : (
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {favorites.map((fav) => (
-                    <Card key={fav.pcroomId} className="p-4 hover:bg-accent transition-colors cursor-pointer border border-border">
-                      <CardHeader>
-                        <CardTitle>{fav.nameOfPcroom}</CardTitle>
-                        <CardDescription>
-                          PC방 ID: {fav.pcroomId} <br />
-                          가동률: {fav.utilization ?? 0}%
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <button
-                          className="text-red-500 text-sm"
-                          onClick={() => removeFavorite(fav.pcroomId)}
-                        >
-                          Remove
-                        </button>
-                      </CardContent>
+                    <Card
+                      key={fav.pcroomId}
+                      className="p-4 shadow-subtle hover:shadow-elegant transition-all duration-300 border border-border"
+                    >
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-semibold text-lg">{fav.nameOfPcroom}</h3>
+                          <Button
+                            size="sm"
+                            className="bg-gradient-primary shadow-elegant"
+                            onClick={() => removeFavorite(fav.pcroomId)}
+                          >
+                            삭제
+                          </Button>
+                        </div>
+                        <div className="text-sm text-muted-foreground flex justify-between">
+                          <span>가동률</span>
+                          <span className="font-semibold text-primary">
+                            {fav.utilization?.toFixed(2) ?? "0"}%
+                          </span>
+                        </div>
+                      </div>
                     </Card>
                   ))}
                 </div>

@@ -18,7 +18,8 @@ interface ManagerFavorite {
 
 const ManagerDashboard = () => {
   const { user } = useUser();
-  const [pcrooms, setPcrooms] = useState<ManagerFavorite[]>([]);
+  const [pcrooms, setPcrooms] = useState<ManagerFavorite[]>([]); // 전체 관리 피시방
+  const [utilizationData, setUtilizationData] = useState<ManagerFavorite[]>([]); // 최근 24시간 가동률 데이터
   const [searchResults, setSearchResults] = useState<ManagerFavorite[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -40,11 +41,46 @@ const ManagerDashboard = () => {
     }
   };
 
+  /** 검색 기능 */
+  const handleSearch = async () => {
+    const trimmed = search.trim();
+    if (!trimmed) {
+      setSearchResults([]);
+      return;
+    }
+    const data = await safeApiGet("/pcrooms", { params: { name: trimmed } });
+    if (Array.isArray(data)) setSearchResults(data);
+    else setSearchResults([]);
+  };
+
+  /** 관리 피시방 전체 조회 */
+  const fetchManagerFavoritesList = async () => {
+    const data = await safeApiGet("/manager-favorites/favorite");
+    if (Array.isArray(data)) {
+      setPcrooms(data);
+    } else {
+      setPcrooms([]);
+    }
+  };
+
+  /** 최근 24시간 가동률 데이터 조회 */
+  const fetchManagerFavoritesUtilization = async () => {
+    setLoading(true);
+    const data = await safeApiGet("/manager-favorites?hours=24");
+    if (Array.isArray(data)) {
+      setUtilizationData(data);
+    } else {
+      setUtilizationData([]);
+    }
+    setLoading(false);
+  };
+
   const addFavorite = async (pcroomId: number) => {
     if (!token) return;
     try {
       await api.post(`/manager-favorites/${pcroomId}`);
-      fetchManagerFavorites();
+      fetchManagerFavoritesList();
+      fetchManagerFavoritesUtilization();
       setSearchResults(prev => prev.filter(pc => pc.pcroomId !== pcroomId));
     } catch (err) {
       console.error("Failed to add manager favorite:", err);
@@ -55,38 +91,11 @@ const ManagerDashboard = () => {
     if (!token) return;
     try {
       await api.delete(`/manager-favorites/${pcroomId}`);
-      fetchManagerFavorites();
+      fetchManagerFavoritesList();
+      fetchManagerFavoritesUtilization();
     } catch (err) {
       console.error("Failed to delete manager favorite:", err);
     }
-  };
-
-  /** 검색 기능 */
-  const handleSearch = async () => {
-    const trimmed = search.trim();
-    if (!trimmed) {
-      setSearchResults([]);
-      return;
-    }
-
-    const data = await safeApiGet("/pcrooms", { params: { name: trimmed } });
-    if (Array.isArray(data)) setSearchResults(data);
-    else setSearchResults([]);
-  };
-
-  /** 경쟁 피시방 리스트 */
-  const fetchManagerFavorites = async (hours = 24) => {
-    setLoading(true);
-    const data = await safeApiGet(`/manager-favorites?hours=${hours}`);
-    if (Array.isArray(data)) {
-      const sorted = data.sort(
-        (a, b) => new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime()
-      );
-      setPcrooms(sorted);
-    } else {
-      setPcrooms([]);
-    }
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -95,54 +104,28 @@ const ManagerDashboard = () => {
   }, [token, user, navigate]);
 
   useEffect(() => {
-    if (token) fetchManagerFavorites();
+    if (token) {
+      fetchManagerFavoritesList();
+      fetchManagerFavoritesUtilization();
+    }
   }, [token]);
 
   useEffect(() => {
-    const interval = setInterval(() => fetchManagerFavorites(), 3 * 60 * 1000);
+    const interval = setInterval(() => {
+      fetchManagerFavoritesList();
+      fetchManagerFavoritesUtilization();
+    }, 3 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
 
   /** 시간대별 그룹화 */
-  const groupByHour = (pcrooms: ManagerFavorite[]) => {
-    return pcrooms.reduce<Record<string, ManagerFavorite[]>>((acc, pc) => {
+  const groupByHour = (data: ManagerFavorite[]) =>
+    data.reduce<Record<string, ManagerFavorite[]>>((acc, pc) => {
       const hour = new Date(pc.recordedAt).toLocaleString(undefined, { hour: '2-digit', minute: '2-digit' });
       if (!acc[hour]) acc[hour] = [];
       acc[hour].push(pc);
       return acc;
     }, {});
-  };
-
-  /** 시간대별 카드 그룹 컴포넌트 */
-  const PcroomHourGroup = ({ hour, pcrooms }: { hour: string; pcrooms: ManagerFavorite[] }) => (
-    <div className="mb-4">
-      <h3 className="text-sm font-semibold mb-2">{hour}</h3>
-      <div className="flex gap-2 overflow-x-auto">
-        {pcrooms.map(pc => (
-          <Card
-            key={`${pc.pcroomId}-${pc.recordedAt}`}
-            className="min-w-[200px] p-4 flex-shrink-0"
-          >
-            <CardHeader>
-              <CardTitle>{pc.nameOfPcroom || pc.pcroomName}</CardTitle> {/* 이름 표시 수정 */}
-              <CardDescription>
-                가동률: {(pc.utilization ?? 0).toFixed(2)}%
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => removeFavorite(pc.pcroomId)}
-              >
-                경쟁 피시방 삭제
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </div>
-  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-6">
@@ -212,12 +195,13 @@ const ManagerDashboard = () => {
                   placeholder="PC방 이름 검색"
                   className="border p-2 rounded flex-1"
                 />
-                <button
+                <Button
+                  size="lg"
                   onClick={handleSearch}
-                  className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/80"
+                  className="bg-gradient-primary shadow-elegant"
                 >
                   Search
-                </button>
+                </Button>
               </div>
 
               {searchResults.length > 0 && (
@@ -232,8 +216,8 @@ const ManagerDashboard = () => {
                       </CardHeader>
                       <CardContent>
                         <Button
-                          size="sm"
-                          variant="outline"
+                          size="lg"
+                          className="bg-gradient-primary shadow-elegant"
                           onClick={() => addFavorite(pcroom.pcroomId)}
                         >
                           경쟁 피시방 등록
@@ -246,26 +230,78 @@ const ManagerDashboard = () => {
             </CardContent>
           </Card>
 
-          {/* 시간대별 경쟁 피시방 */}
-          <Card className="shadow-subtle bg-gradient-card border-primary/20">
+          {/* 관리 중인 경쟁 피시방 */}
+          <Card className="shadow-subtle bg-gradient-card border-primary/20 mb-8">
             <CardHeader>
-              <CardTitle>Competitor Pcrooms Utilization</CardTitle>
-              <CardDescription>최근 24시간 내 등록된 경쟁 피시방의 가동률</CardDescription>
+              <CardTitle>Managed Pcrooms</CardTitle>
+              <CardDescription>관리 중인 경쟁 피시방 리스트</CardDescription>
             </CardHeader>
             <CardContent>
-              {loading ? (
-                <div className="text-center text-muted-foreground">Loading...</div>
-              ) : pcrooms.length === 0 ? (
-                <div className="text-center text-muted-foreground">No competitor data</div>
+              {pcrooms.length === 0 ? (
+                <div className="text-center text-muted-foreground">관리 중인 피시방이 없습니다</div>
               ) : (
-                <>
-                  {Object.entries(groupByHour(pcrooms)).map(([hour, pcs]) => (
-                    <PcroomHourGroup key={hour} hour={hour} pcrooms={pcs} />
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {pcrooms.map((pc, index) => (
+                    <Card key={`${pc.pcroomId}-managed-${index}`} className="p-4 shadow-subtle">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-semibold text-lg">{pc.nameOfPcroom || pc.pcroomName}</h3>
+                        <Button
+                          size="lg"
+                          className="bg-gradient-primary shadow-elegant"
+                          onClick={() => removeFavorite(pc.pcroomId)}
+                        >
+                          삭제
+                        </Button>
+                      </div>
+                    </Card>
                   ))}
-                </>
+                </div>
               )}
             </CardContent>
           </Card>
+
+{/* 시간대별 경쟁 피시방 가동률 */}
+<Card className="shadow-subtle bg-gradient-card border-primary/20">
+  <CardHeader>
+    <CardTitle>Competitor Pcrooms Utilization</CardTitle>
+    <CardDescription>최근 24시간 내 등록된 경쟁 피시방의 가동률</CardDescription>
+  </CardHeader>
+  <CardContent>
+    {loading ? (
+      <div className="text-center text-muted-foreground">Loading...</div>
+    ) : (
+      <>
+        {Object.entries(
+          groupByHour(
+            [...utilizationData].sort(
+              (a, b) => new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime()
+            )
+          )
+        ).map(([hour, pcs]) => (
+          <div key={hour} className="mb-4">
+            <h3 className="text-sm font-semibold mb-2">{hour}</h3>
+            <div className="flex gap-2 overflow-x-auto">
+              {pcs.map(pc => (
+                <Card
+                  key={`${pc.pcroomId}-${pc.recordedAt}`}
+                  className="min-w-[200px] p-4 flex-shrink-0"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold">{pc.nameOfPcroom || pc.pcroomName}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {((pc.utilization ?? 0)).toFixed(2)}%
+                    </span>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        ))}
+      </>
+    )}
+  </CardContent>
+</Card>
+
 
         </div>
       </main>

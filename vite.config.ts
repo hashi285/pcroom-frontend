@@ -12,7 +12,6 @@ export default defineConfig(({ mode }) => ({
     proxy: {
       "/pcrooms": "http://localhost:8080",
       "/favorites": "http://localhost:8080",
-      "/auth": "http://localhost:8080",
       "/manager-favorites": "http://localhost:8080", 
     },
   },
