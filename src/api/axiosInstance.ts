@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://pcroom.duckdns.org/",
+  baseURL: "https://pcroom.duckdns.org",
 });
 
 // 요청 시 자동 JWT 헤더 추가
