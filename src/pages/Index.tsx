@@ -2,50 +2,10 @@ import { Navigation } from "@/components/Navigation";
 import { MembershipCard } from "@/components/MembershipCard";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Shield, Zap, Users, Apple } from "lucide-react";
+import { Shield, Zap, Users, Apple, UserCog, Megaphone } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
-
-  const membershipTiers = [
-    {
-      title: "Free",
-      price: "Free",
-      description: "Perfect for getting started",
-      features: [
-        "Access to basic features",
-        "Community support",
-        "Limited resources",
-        "Email updates",
-      ],
-    },
-    {
-      title: "Pro",
-      price: "$19",
-      description: "For serious members",
-      features: [
-        "All Free features",
-        "Priority support",
-        "Unlimited resources",
-        "Advanced analytics",
-        "Custom integrations",
-      ],
-      popular: true,
-    },
-    {
-      title: "Enterprise",
-      price: "$49",
-      description: "For teams and organizations",
-      features: [
-        "All Pro features",
-        "Dedicated support",
-        "Team management",
-        "API access",
-        "Custom solutions",
-        "SLA guarantee",
-      ],
-    },
-  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
@@ -55,10 +15,10 @@ const Index = () => {
       <section className="container mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
         <div className="max-w-4xl mx-auto text-center animate-fade-in">
           <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-primary bg-clip-text text-transparent">
-            Welcome to 피방자리
+            피방자리
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            PC방 자리 추천 및 경쟁 PC방 가동률 확인 기능을 제공하는 시스템입니다.
+            PC방 자리 추천 및 경쟁 PC방 가동률 확인 기능을 제공하는 시스템
           </p>
           <div className="flex gap-4 justify-center">
             <Button
@@ -66,11 +26,9 @@ const Index = () => {
               className="bg-gradient-primary shadow-elegant"
               onClick={() => navigate("/auth")}
             >
-              Get Started Free
+              Get Started 
             </Button>
-            <Button size="lg" variant="outline">
-              Learn More
-            </Button>
+          
           </div>
         </div>
       </section>
@@ -87,14 +45,14 @@ const Index = () => {
                 description: "빠른 자리 추천, 실시간 자리 현황 확인",
               },
               {
-                icon: Zap,
+                icon: UserCog,
                 title: "PC방 관리자",
                 description: "PC방의 가동률 확인, 효율적인 자리 관리",
               },
               {
-                icon: Users,
-                title: "이용자와 관리자 커뮤니티",
-                description: "사용자와 관리자 간의 소통 공간 제공",
+                icon: Megaphone,
+                title: "공지사항",
+                description: "피시방별 최신 공지사항 제공",
               },
             ].map((feature, index) => (
               <div
@@ -105,27 +63,6 @@ const Index = () => {
                 <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
                 <p className="text-muted-foreground">{feature.description}</p>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Section */}
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Choose Your Plan</h2>
-            <p className="text-muted-foreground">
-              Select the perfect membership tier for your needs
-            </p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            {membershipTiers.map((tier, index) => (
-              <MembershipCard
-                key={index}
-                {...tier}
-                onSelect={() => navigate("/auth")}
-              />
             ))}
           </div>
         </div>

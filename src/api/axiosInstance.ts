@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://pcroom.duckdns.org/api" // 백엔드 주소
+  baseURL: "http://localhost:8080/api", // 백엔드 주소  https://pcroom.duckdns.org/api
 });
 
 // 요청 시 자동 JWT 헤더 추가
@@ -16,7 +16,7 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   (err) => {
-    if (err.response?.status === 401) {
+    if (err.response?.status === 401, 403) {
       localStorage.removeItem("jwt");
       window.location.href = "/auth"; // SPA redirect
     }
