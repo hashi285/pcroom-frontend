@@ -7,6 +7,7 @@ import { Mail, Calendar, Crown } from "lucide-react";
 import { useUser } from "@/context/UserProvider";
 import api from "@/api/axiosInstance";
 import { Button } from "@/components/ui/button";
+import {BottomNav} from "@/components/BottomNav";
 
 interface Favorite {
   pcroomId: number;
@@ -256,7 +257,7 @@ const Dashboard = () => {
               )}
             </CardContent>
           </Card>
-
+          <BottomNav/>
         </div>
       </main>
     </div>

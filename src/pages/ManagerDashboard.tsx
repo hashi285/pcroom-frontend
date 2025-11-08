@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@/context/UserProvider";
 import api from "@/api/axiosInstance";
+import {BottomNav} from "@/components/BottomNav";
 
 interface ManagerFavorite {
   pcroomId: number;
@@ -301,7 +302,7 @@ const ManagerDashboard = () => {
     )}
   </CardContent>
 </Card>
-
+<BottomNav/>
 
         </div>
       </main>
