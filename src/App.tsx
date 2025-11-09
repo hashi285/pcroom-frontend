@@ -15,6 +15,9 @@ import ManagerDashboard from "./pages/ManagerDashboard";
 import PcroomForm from "./pages/PcroomForm";
 import NotFound from "./pages/NotFound";
 import PcroomSearch from "./pages/PcroomSearch";
+import Notices from "./pages/Notices";
+import PcroomDetail from "./pages/PcroomDetail";
+import UserSettings from "./pages/UserSettings";
 
 const queryClient = new QueryClient();
 
@@ -64,6 +67,34 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <PcroomSearch />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* 공지사항 페이지 */}
+            <Route
+              path="/notices"
+              element={
+                <ProtectedRoute>
+                  <Notices />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/pcroom/:id"
+              element={
+                <ProtectedRoute>
+                  <PcroomDetail />
+                </ProtectedRoute>
+              }
+            />
+
+              <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <UserSettings />
                 </ProtectedRoute>
               }
             />

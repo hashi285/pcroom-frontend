@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Mail, Calendar, Crown } from "lucide-react";
 import { useUser } from "@/context/UserProvider";
 import api from "@/api/axiosInstance";
-import { Button } from "@/components/ui/button";
 import { BottomNav } from "@/components/BottomNav";
 
 interface Favorite {
@@ -101,15 +100,6 @@ const Dashboard = () => {
     }
   };
 
-  const removeFavorite = async (pcroomId: number) => {
-    try {
-      await api.delete(`/favorites/${pcroomId}`);
-      fetchFavorites();
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-6">
       <Navigation />
@@ -119,7 +109,7 @@ const Dashboard = () => {
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-4xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent">
-              User Dashboard
+              대시보드
             </h1>
           </div>
 
@@ -191,47 +181,44 @@ const Dashboard = () => {
                     else if (utilization > 0) colorClass = "text-green-500 bg-green-500/10";
 
                     return (
-                     
-<Card
-  key={fav.pcroomId}
-  className="p-4 shadow-subtle hover:shadow-elegant transition-all duration-300 border border-border cursor-pointer"
->
-  <div className="flex items-center justify-between gap-4">
-    {/* 왼쪽 영역: 가동률 + 정보 */}
-    <div className="flex items-center gap-4 flex-1">
-      {/* 가동률 원형 */}
-      <div
-        className={`flex items-center justify-center h-12 w-12 rounded-full ${colorClass}`}
-      >
-        <div className="flex items-baseline gap-0.5">
-          <span className="text-lg font-bold">{utilization.toFixed(0)}</span>
-          <span className="text-xs font-medium">%</span>
-        </div>
-      </div>
 
-      {/* 이름 + 좌석/거리 */}
-      <div className="flex-1 flex flex-col gap-1">
-        <p className="font-semibold text-lg text-slate-900 dark:text-white">
-          {fav.nameOfPcroom}
-        </p>
-        <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-          <span>12/240석</span>
-        </div>
-      </div>
-    </div>
+                      <Card
+                        key={fav.pcroomId}
+                        className="p-4 shadow-subtle hover:shadow-elegant transition-all duration-300 border border-border cursor-pointer"
+                      >
+                        <div className="flex items-center justify-between gap-4">
+                          {/* 왼쪽 영역: 가동률 + 정보 */}
+                          <div className="flex items-center gap-4 flex-1">
+                            {/* 가동률 원형 */}
+                            <div
+                              className={`flex items-center justify-center h-12 w-12 rounded-full ${colorClass}`}
+                            >
+                              <div className="flex items-baseline gap-0.5">
+                                <span className="text-lg font-bold">{utilization.toFixed(0)}</span>
+                                <span className="text-xs font-medium">%</span>
+                              </div>
+                            </div>
 
-    {/* 오른쪽 화살표 */}
-    <span
-      className="material-symbols-outlined text-slate-400 dark:text-slate-500"
-      onClick={() => navigate(`/pcroom/${fav.pcroomId}`)}
-    >
-      chevron_right
-    </span>
-  </div>
-</Card>
+                            {/* 이름 + 좌석/거리 */}
+                            <div className="flex-1 flex flex-col gap-1">
+                              <p className="font-semibold text-lg text-slate-900 dark:text-white">
+                                {fav.nameOfPcroom}
+                              </p>
+                              <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                                <span>12/240석</span>
+                              </div>
+                            </div>
+                          </div>
 
-
-
+                          {/* 오른쪽 화살표 */}
+                          <span
+                            className="material-symbols-outlined text-slate-400 dark:text-slate-500"
+                            onClick={() => navigate(`/pcroom/${fav.pcroomId}`)}
+                          >
+                            chevron_right
+                          </span>
+                        </div>
+                      </Card>
                     );
                   })}
                 </div>

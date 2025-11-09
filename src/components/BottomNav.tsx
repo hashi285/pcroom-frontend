@@ -1,6 +1,6 @@
 // src/components/BottomNav.tsx
 import { Link, useLocation } from "react-router-dom";
-import { Home, Search, Star, User, Settings } from "lucide-react";
+import { Home, Search, Mail, User, Settings } from "lucide-react";
 import { useUser } from "@/context/UserProvider";
 import cn from "classnames";
 
@@ -24,8 +24,8 @@ export const BottomNav = () => {
   const items: NavItem[] = [
     { id: "home", to: homePath, label: "홈", icon: <Home size={20} />, show: true },
     { id: "search", to: "/search", label: "검색", icon: <Search size={20} />, show: true },
-    { id: "favorites", to: "/favorites", label: "즐겨찾기", icon: <Star size={20} />, show: true },
-    { id: "profile", to: "/profile", label: "내정보", icon: <User size={20} />, show: true },
+    { id: "notices", to: "/notices", label: "공지사항", icon: <Mail size={20} />, show: true },
+    { id: "settings", to: "/settings", label: "내정보", icon: <User size={20} />, show: true },
     // 관리자 전용 설정
     { id: "admin", to: "/admin/settings", label: "설정", icon: <Settings size={20} />, show: isAdmin },
   ];
