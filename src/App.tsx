@@ -14,6 +14,7 @@ import Dashboard from "./pages/Dashboard";
 import ManagerDashboard from "./pages/ManagerDashboard";
 import PcroomForm from "./pages/PcroomForm";
 import NotFound from "./pages/NotFound";
+import PcroomSearch from "./pages/PcroomSearch";
 
 const queryClient = new QueryClient();
 
@@ -54,6 +55,15 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <PcroomForm />
+                </ProtectedRoute>
+              }
+            />
+            {/* 피시방 검색 페이지 */}
+            <Route
+              path="/search"
+              element={
+                <ProtectedRoute>
+                  <PcroomSearch />
                 </ProtectedRoute>
               }
             />

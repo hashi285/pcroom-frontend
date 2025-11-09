@@ -18,7 +18,7 @@ const Index = () => {
             피방자리
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            PC방 자리 추천 및 경쟁 PC방 가동률 확인 기능을 제공하는 시스템
+            PC방 자리 추천 및 경쟁 PC방 가동률 확인 기능 제공 시스템
           </p>
           <div className="flex gap-4 justify-center">
             <Button
