@@ -124,8 +124,11 @@ const PcroomSearch = () => {
                                             <div className="flex items-center justify-between">
                                                 <h3 className="font-semibold text-lg">{fav.nameOfPcroom}</h3>
                                                 <button
-                                                    className="flex size-10 shrink-0 items-center justify-center rounded-full text-white/60 transition-colors hover:bg-red-500/20 hover:text-red-400"
+                                                    className="flex size-10 shrink-0 items-center justify-center rounded-full text-white transition-colors"
+                                                    style={{ backgroundColor: "#646cffaa" }}
                                                     onClick={() => removeFavorite(fav.pcroomId)}
+                                                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#646cff")}
+                                                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#646cffaa")}
                                                 >
                                                     <span className="material-symbols-outlined text-2xl">delete</span>
                                                 </button>
@@ -176,7 +179,6 @@ const PcroomSearch = () => {
                                     </Button>
                                 </div>
 
-
                                 {loading ? (
                                     <div className="text-center text-muted-foreground">Loading...</div>
                                 ) : (
@@ -190,13 +192,13 @@ const PcroomSearch = () => {
                                                     className="flex items-center justify-between border border-border rounded-lg p-3 hover:shadow-md transition-all"
                                                 >
                                                     <span className="font-medium">{pcroom.nameOfPcroom}</span>
-                                                    <Button
-                                                        size="sm"
-                                                        className="bg-gradient-primary shadow-elegant"
+                                                    {/* 아이콘 버튼으로 변경 */}
+                                                    <button
+                                                        className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white shadow-md hover:scale-105 transition-transform"
                                                         onClick={() => addFavorite(pcroom.pcroomId)}
                                                     >
-                                                        추가
-                                                    </Button>
+                                                        <Plus size={20} />
+                                                    </button>
                                                 </div>
                                             ))
                                         )}
