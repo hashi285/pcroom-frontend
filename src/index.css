@@ -103,15 +103,7 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
-  html {
-    font-family: 'Noto Sans KR', sans-serif; /* ✅ 폰트 지정 */
-    -webkit-font-smoothing: antialiased;     /* ✅ 폰트 부드럽게 렌더링 (WebKit) */
-    -moz-osx-font-smoothing: grayscale;      /* ✅ macOS용 스무딩 */
-    text-rendering: optimizeLegibility;      /* ✅ 커닝 및 렌더링 품질 개선 */
-  }
-
   body {
-    @apply bg-background text-foreground antialiased; /* ✅ Tailwind 스무딩 클래스 병행 */
+    @apply bg-background text-foreground;
   }
 }
-
