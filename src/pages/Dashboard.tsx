@@ -7,6 +7,8 @@ import { Mail, Calendar } from "lucide-react";
 import { useUser } from "@/context/UserProvider";
 import api from "@/api/axiosInstance";
 import { BottomNav } from "@/components/BottomNav";
+import { Button } from "@/components/ui/button";
+import { Plus, X } from "lucide-react";
 
 interface Favorite {
   pcroomId: number;
@@ -29,6 +31,7 @@ const Dashboard = () => {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem("jwt");
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     if (!token) {
@@ -51,6 +54,32 @@ const Dashboard = () => {
       return null;
     }
   };
+
+      // ✅ 수정된 부분: 낙관적 업데이트 + 모달 유지 + 검색결과 즉시 제거
+    const addFavorite = async (pcroomId: number) => {
+        // 클릭 즉시 목록에서 제거 (UI 반응 빠르게)
+        setPcrooms((prev) => prev.filter((p) => p.pcroomId !== pcroomId));
+
+        try {
+            await api.post(`/favorites/${pcroomId}`);
+            fetchFavorites(); // 즐겨찾기 목록 갱신
+        } catch (err) {
+            console.error(err);
+            fetchFavorites();
+            handleSearch(); // 실패 시 검색 결과 복원
+        }
+    };
+
+      const handleSearch = async () => {
+        if (!search.trim()) return;
+        setLoading(true);
+        const data = await safeApiGet("/pcrooms", { params: { name: search } });
+        if (Array.isArray(data)) setPcrooms(data);
+        else if (data?.pcrooms && Array.isArray(data.pcrooms)) setPcrooms(data.pcrooms);
+        else setPcrooms([]);
+        setLoading(false);
+    };
+
 
   const fetchPcrooms = async () => {
     const data = await safeApiGet("/pcrooms");
@@ -89,17 +118,10 @@ const Dashboard = () => {
       <main className="container mx-auto px-3 sm:px-4 pt-24 pb-20">
         <div className="max-w-2xl mx-auto animate-fade-in">
 
-          {/* Header */}
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              대시보드
-            </h1>
-          </div>
-
           {/* 즐겨찾기 카드 */}
           <Card className="shadow-subtle bg-gradient-card border-primary/20 rounded-xl w-full">
             <CardHeader>
-              <CardTitle>My Favorites</CardTitle>
+              <CardTitle>내 피시방</CardTitle>
               <CardDescription>PC방 즐겨찾기 목록 (최신 추가순)</CardDescription>
             </CardHeader>
             <CardContent>
@@ -161,32 +183,25 @@ const Dashboard = () => {
 
           {/* 공지사항 카드 */}
           <div className="mt-8">
-            <Card className="shadow-subtle bg-gradient-card border-primary/20 rounded-xl w-full">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Mail className="w-5 h-5 text-primary" />
-                  공지사항
-                </CardTitle>
-                <CardDescription>최신 공지사항 안내</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-muted-foreground" />
-                    <span className="font-medium">06-15:</span>
-                    <div>공지사항이 등록되었습니다.</div>
-                  </div>
-                  {user?.userId && (
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">첫 공지사항이 등록됩니다.</span>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+<Card className="shadow-subtle bg-gradient-card border-primary/20 rounded-xl w-full">
+  <CardHeader>
+    <CardTitle className="flex items-center justify-between gap-2">
+      <div className="flex items-center gap-2">
+        <Mail className="w-5 h-5 text-primary" />
+        <span className="font-semibold">공지사항</span>
+      </div>
+      <div className="flex items-center gap-2 text-sm text-muted-foreground truncate max-w-[70%]">
+        <Calendar className="w-4 h-4 text-muted-foreground" />
+        <span>06-15: 시스템 점검 안내</span>
+      </div>
+    </CardTitle>
+  </CardHeader>
+</Card>
 
-           <div className="mt-8">
+</div>
+
+
+          <div className="mt-8">
             <Card className="shadow-subtle bg-gradient-card border-primary/20 rounded-xl w-full">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -198,7 +213,7 @@ const Dashboard = () => {
               <CardContent>
                 <div className="space-y-2 text-sm">
                   <div className="flex items-center gap-2">
-                  
+
                     <div>응애</div>
                   </div>
                   {user?.userId && (
@@ -210,6 +225,74 @@ const Dashboard = () => {
               </CardContent>
             </Card>
           </div>
+
+              {/* Floating Button → 검색 모달 열기 */}
+                    <div className="pointer-events-none fixed bottom-20 right-6 z-50 flex justify-end">
+                        <button
+                            className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-lg shadow-primary/30 transition-transform hover:scale-105"
+                            onClick={() => setShowModal(true)}
+                        >
+                            <Plus size={24} />
+                        </button>
+                    </div>
+
+          {/* 검색 모달 */}
+                    {showModal && (
+                        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                            <div className="bg-white rounded-xl shadow-lg p-6 w-[90%] max-w-2xl relative animate-fade-in">
+                                <button
+                                    onClick={() => setShowModal(false)}
+                                    className="absolute top-4 right-4 flex items-center justify-center w-9 h-9 rounded-full bg-slate-100 text-slate-500 shadow-sm transition-all hover:bg-slate-200 hover:text-slate-800 hover:shadow-md active:scale-95"
+                                >
+                                    <X size={18} strokeWidth={2} />
+                                </button>
+
+                                <h2 className="text-xl font-semibold mb-4">PC방 검색</h2>
+
+                                <div className="flex gap-2 mb-4 items-center">
+                                    <input
+                                        type="text"
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                        placeholder="PC방 이름 입력"
+                                        className="flex-1 h-11 px-3 rounded-lg border border-border text-sm focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                                    />
+                                    <Button
+                                        className="h-11 px-5 text-sm font-semibold bg-gradient-primary shadow-elegant hover:opacity-90 transition-all"
+                                        onClick={handleSearch}
+                                    >
+                                        검색
+                                    </Button>
+                                </div>
+
+                                {loading ? (
+                                    <div className="text-center text-muted-foreground">Loading...</div>
+                                ) : (
+                                    <div className="grid gap-3">
+                                        {pcrooms.length === 0 ? (
+                                            <p className="text-muted-foreground text-center">검색 결과가 없습니다.</p>
+                                        ) : (
+                                            pcrooms.map((pcroom) => (
+                                                <div
+                                                    key={pcroom.pcroomId}
+                                                    className="flex items-center justify-between border border-border rounded-lg p-3 hover:shadow-md transition-all"
+                                                >
+                                                    <span className="font-medium">{pcroom.nameOfPcroom}</span>
+                                                    {/* 아이콘 버튼으로 변경 */}
+                                                    <button
+                                                        className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white shadow-md hover:scale-105 transition-transform"
+                                                        onClick={() => addFavorite(pcroom.pcroomId)}
+                                                    >
+                                                        <Plus size={20} />
+                                                    </button>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
 
           <BottomNav />
         </div>
