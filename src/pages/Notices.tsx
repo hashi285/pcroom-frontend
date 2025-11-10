@@ -2,6 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Mail, Calendar } from "lucide-react";
 import { BottomNav } from "@/components/BottomNav";
+import { Navigation } from "@/components/Navigation";
 
 interface Notice {
   id: number;
@@ -18,6 +19,7 @@ const dummyNotices: Notice[] = [
 const Notices = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-6">
+      <Navigation />
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12">
         <div className="max-w-5xl mx-auto animate-fade-in">
           {/* Header */}
