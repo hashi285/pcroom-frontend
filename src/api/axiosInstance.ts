@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://pcroom.duckdns.org/api", // 백엔드 주소  https://pcroom.duckdns.org/api
+  baseURL: "http://localhost:8080/api", // 백엔드 주소  https://pcroom.duckdns.org/api
 });
 
 // 요청 시 자동 JWT 헤더 추가

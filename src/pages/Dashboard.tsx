@@ -115,7 +115,7 @@ const Dashboard = () => {
 
           {/* 계정 정보 */}
           <div className="grid gap-6 md:grid-cols-2 mb-8">
-            <Card className="shadow-subtle hover:shadow-elegant transition-all duration-300">
+            {/* <Card className="shadow-subtle hover:shadow-elegant transition-all duration-300">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Crown className="w-5 h-5 text-primary" />
@@ -129,9 +129,9 @@ const Dashboard = () => {
                   <div>ROLE: {user?.role ?? "Loading..."}</div>
                 </div>
               </CardContent>
-            </Card>
+            </Card> */}
 
-            <Card className="shadow-subtle hover:shadow-elegant transition-all duration-300">
+            {/* <Card className="shadow-subtle hover:shadow-elegant transition-all duration-300">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Mail className="w-5 h-5 text-primary" />
@@ -153,7 +153,7 @@ const Dashboard = () => {
                   )}
                 </div>
               </CardContent>
-            </Card>
+            </Card> */}
           </div>
 
 

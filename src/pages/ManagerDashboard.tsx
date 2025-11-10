@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@/context/UserProvider";
 import api from "@/api/axiosInstance";
-import {BottomNav} from "@/components/BottomNav";
+import { BottomNav } from "@/components/BottomNav";
 
 interface ManagerFavorite {
   pcroomId: number;
@@ -261,48 +261,49 @@ const ManagerDashboard = () => {
             </CardContent>
           </Card>
 
-{/* 시간대별 경쟁 피시방 가동률 */}
-<Card className="shadow-subtle bg-gradient-card border-primary/20">
-  <CardHeader>
-    <CardTitle>Competitor Pcrooms Utilization</CardTitle>
-    <CardDescription>최근 24시간 내 등록된 경쟁 피시방의 가동률</CardDescription>
-  </CardHeader>
-  <CardContent>
-    {loading ? (
-      <div className="text-center text-muted-foreground">Loading...</div>
-    ) : (
-      <>
-        {Object.entries(
-          groupByHour(
-            [...utilizationData].sort(
-              (a, b) => new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime()
-            )
-          )
-        ).map(([hour, pcs]) => (
-          <div key={hour} className="mb-4">
-            <h3 className="text-sm font-semibold mb-2">{hour}</h3>
-            <div className="flex gap-2 overflow-x-auto">
-              {pcs.map(pc => (
-                <Card
-                  key={`${pc.pcroomId}-${pc.recordedAt}`}
-                  className="min-w-[200px] p-4 flex-shrink-0"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold">{pc.nameOfPcroom || pc.pcroomName}</span>
-                    <span className="text-sm text-muted-foreground">
-                      {((pc.utilization ?? 0)).toFixed(2)}%
-                    </span>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </div>
-        ))}
-      </>
-    )}
-  </CardContent>
-</Card>
-<BottomNav/>
+          {/* 시간대별 경쟁 피시방 가동률 */}
+          <Card className="shadow-subtle bg-gradient-card border-primary/20">
+            <CardHeader>
+              <CardTitle>Competitor Pcrooms Utilization</CardTitle>
+              <CardDescription>최근 24시간 내 등록된 경쟁 피시방의 가동률</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="text-center text-muted-foreground">Loading...</div>
+              ) : (
+                <>
+                  {Object.entries(
+                    groupByHour(
+                      [...utilizationData].sort(
+                        (a, b) => new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime()
+                      )
+                    )
+                  ).map(([hour, pcs]) => (
+                    <div key={hour} className="mb-6">
+                      <h3 className="text-sm font-semibold mb-2">{hour}</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
+                        {pcs.map(pc => (
+                          <Card
+                            key={`${pc.pcroomId}-${pc.recordedAt}`}
+                            className="p-3 transition-all hover:shadow-elegant"
+                          >
+                            <div className="flex flex-col gap-1">
+                              <span className="font-semibold truncate">{pc.nameOfPcroom || pc.pcroomName}</span>
+                              <span className="text-sm text-muted-foreground">
+                                {((pc.utilization ?? 0)).toFixed(2)}%
+                              </span>
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          <BottomNav />
 
         </div>
       </main>
