@@ -1,6 +1,15 @@
+/** @type {import('tailwindcss').Config} */
 export default {
-  plugins: {
-    tailwindcss: {},
-    autoprefixer: {},
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ['Noto Sans KR', 'sans-serif'], // ✅ 추가
+      },
+    },
   },
-};
+  plugins: [],
+}

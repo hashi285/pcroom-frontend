@@ -12,11 +12,12 @@ const Index = () => {
       <Navigation />
       
       {/* Hero Section */}
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
+      {/* <section className="container mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
         <div className="max-w-4xl mx-auto text-center animate-fade-in">
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-primary bg-clip-text text-transparent">
-            피방자리
-          </h1>
+          <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-primary bg-clip-text text-transparent tracking-tight antialiased">
+  피방자리
+</h1>
+
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
             PC방 자리 추천 및 경쟁 PC방 가동률 확인 기능 제공 시스템
           </p>
@@ -31,12 +32,12 @@ const Index = () => {
           
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Features Section */}
       <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-12">기능 소개</h2>
+          {/* <h2 className="text-3xl font-bold text-center mb-12">기능 소개</h2> */}
           <div className="grid md:grid-cols-3 gap-8">
             {[
               {
