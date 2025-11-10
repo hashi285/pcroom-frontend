@@ -9,35 +9,32 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      <Navigation />
+      
       
       {/* Hero Section */}
-      {/* <section className="container mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
-        <div className="max-w-4xl mx-auto text-center animate-fade-in">
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-primary bg-clip-text text-transparent tracking-tight antialiased">
-  피방자리
-</h1>
+      <section className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
+  <div className="max-w-4xl text-center animate-fade-in">
+    <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-primary bg-clip-text text-transparent tracking-tight antialiased">
+      피방자리
+    </h1>
 
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            PC방 자리 추천 및 경쟁 PC방 가동률 확인 기능 제공 시스템
-          </p>
-          <div className="flex gap-4 justify-center">
-            <Button
-              size="lg"
-              className="bg-gradient-primary shadow-elegant"
-              onClick={() => navigate("/auth")}
-            >
-              Get Started 
-            </Button>
-          
-          </div>
-        </div>
-      </section> */}
+    <div className="flex gap-4 justify-center">
+      <Button
+        size="lg"
+        className="bg-gradient-primary shadow-elegant"
+        onClick={() => navigate("/auth")}
+      >
+        Get Started
+      </Button>
+    </div>
+  </div>
+</section>
+
 
       {/* Features Section */}
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      {/* <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="max-w-6xl mx-auto">
-          {/* <h2 className="text-3xl font-bold text-center mb-12">기능 소개</h2> */}
+          <h2 className="text-3xl font-bold text-center mb-12">기능 소개</h2>
           <div className="grid md:grid-cols-3 gap-8">
             {[
               {
@@ -67,10 +64,10 @@ const Index = () => {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* CTA Section */}
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      {/* <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="max-w-4xl mx-auto text-center bg-gradient-card rounded-2xl p-12 border border-primary/20 shadow-elegant">
           <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
           <p className="text-muted-foreground mb-8">
@@ -84,7 +81,7 @@ const Index = () => {
             Start Your Journey
           </Button>
         </div>
-      </section>
+      </section> */}
     </div>
   );
 };
