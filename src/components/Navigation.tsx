@@ -1,15 +1,16 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useUser } from "@/context/UserProvider";
+import { ThemeToggle } from "./ui/ThemeToggle";
 
 interface NavigationProps {
   role: "admin" | "user" | null;
 }
 export const Navigation = () => {
   const { user } = useUser();
-    
 
-    const role = user?.role ?? null; 
-  
+
+  const role = user?.role ?? null;
+
   const linkTo = (() => {
     switch (role) {
       case "ADMIN": return "/manager-dashboard";
@@ -25,8 +26,7 @@ export const Navigation = () => {
           <Link to={linkTo} className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
             피방자리
           </Link>
-
-    
+          <ThemeToggle />
         </div>
       </div>
     </nav>

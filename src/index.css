@@ -8,94 +8,101 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
+    /* Base Colors (Light Mode) */
+    --background: 0 0% 99%;            /* 거의 흰색에 가까운 배경 (#FCFCFC) */
+    --foreground: 222 15% 15%;         /* 어두운 회색 텍스트 (#262626) */
 
-    --card: 217 33% 17%;
-    --card-foreground: 210 40% 98%;
+    --card: 0 0% 100%;                 /* 순백 카드 배경 */
+    --card-foreground: 222 15% 15%;
 
-    --popover: 217 33% 17%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 15% 15%;
 
-    --primary: 263 70% 60%;
+    --primary: 214 53% 46%;            /* #366FB2 (브랜드 블루 유지) */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 220 10% 96%;          /* #F3F3F3 */
+    --secondary-foreground: 222 15% 15%;
 
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 220 10% 94%;
+    --muted-foreground: 222 10% 45%;   /* #777777 정도 */
 
-    --accent: 263 70% 60%;
+    --accent: 214 53% 46%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 55%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 263 70% 60%;
+    --border: 220 10% 90%;
+    --input: 220 10% 90%;
+    --ring: 214 53% 46%;
 
-    --gradient-primary: linear-gradient(135deg, hsl(263 70% 60%) 0%, hsl(221 70% 55%) 100%);
-    --gradient-card: linear-gradient(135deg, hsl(263 70% 60% / 0.1) 0%, hsl(221 70% 55% / 0.1) 100%);
-    --shadow-elegant: 0 10px 40px -10px hsl(263 70% 60% / 0.3);
-    --shadow-subtle: 0 2px 8px -2px hsl(0 0% 0% / 0.2);
+    /* Gradients & Shadows */
+    --gradient-primary: linear-gradient(135deg, hsl(214 53% 46%) 0%, hsl(215 40% 38%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(214 53% 46% / 0.05) 0%, hsl(215 40% 38% / 0.05) 100%);
+    --shadow-elegant: 0 10px 40px -10px hsl(214 53% 46% / 0.15);
+    --shadow-subtle: 0 2px 8px -2px hsl(222 15% 15% / 0.08);
 
-    --sidebar-background: 240 6% 10%;
-    --sidebar-foreground: 240 5% 96%;
-    --sidebar-primary: 263 70% 60%;
+    /* Sidebar */
+    --sidebar-background: 0 0% 98%;    /* 밝은 회색 (#FAFAFA) */
+    --sidebar-foreground: 222 15% 15%;
+    --sidebar-primary: 214 53% 46%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 4% 16%;
-    --sidebar-accent-foreground: 240 5% 96%;
-    --sidebar-border: 240 4% 16%;
-    --sidebar-ring: 263 70% 60%;
-    --radius: 1rem;
+    --sidebar-accent: 220 10% 96%;
+    --sidebar-accent-foreground: 222 15% 15%;
+    --sidebar-border: 220 10% 90%;
+    --sidebar-ring: 214 53% 46%;
+
+    --radius: 0.75rem;
   }
 
   .dark {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
+    /* Dark Mode (이전 버전 그대로 유지) */
+    --background: 220 2% 15%;
+    --foreground: 240 5% 90%;
 
-    --card: 217 33% 17%;
-    --card-foreground: 210 40% 98%;
+    --card: 0 0% 24%;
+    --card-foreground: 240 5% 90%;
 
-    --popover: 217 33% 17%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 24%;
+    --popover-foreground: 240 5% 90%;
 
-    --primary: 263 70% 60%;
+    --primary: 214 53% 46%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 0 0% 24%;
+    --secondary-foreground: 240 5% 90%;
 
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 0 0% 22%;
+    --muted-foreground: 240 4% 70%;
 
-    --accent: 263 70% 60%;
+    --accent: 214 53% 46%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 240 5% 90%;
 
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 263 70% 60%;
+    --border: 0 0% 22%;
+    --input: 0 0% 22%;
+    --ring: 214 53% 46%;
 
-    --gradient-primary: linear-gradient(135deg, hsl(263 70% 60%) 0%, hsl(221 70% 55%) 100%);
-    --gradient-card: linear-gradient(135deg, hsl(263 70% 60% / 0.1) 0%, hsl(221 70% 55% / 0.1) 100%);
-    --shadow-elegant: 0 10px 40px -10px hsl(263 70% 60% / 0.3);
-    --shadow-subtle: 0 2px 8px -2px hsl(0 0% 0% / 0.2);
+    --gradient-primary: linear-gradient(135deg, hsl(214 53% 46%) 0%, hsl(215 40% 38%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(214 53% 46% / 0.1) 0%, hsl(215 40% 38% / 0.1) 100%);
+    --shadow-elegant: 0 10px 40px -10px hsl(214 53% 46% / 0.3);
+    --shadow-subtle: 0 2px 8px -2px hsl(0 0% 0% / 0.3);
 
-    --sidebar-background: 240 6% 10%;
-    --sidebar-foreground: 240 5% 96%;
-    --sidebar-primary: 263 70% 60%;
+    --sidebar-background: 0 0% 14%;
+    --sidebar-foreground: 240 5% 90%;
+    --sidebar-primary: 214 53% 46%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 4% 16%;
-    --sidebar-accent-foreground: 240 5% 96%;
-    --sidebar-border: 240 4% 16%;
-    --sidebar-ring: 263 70% 60%;
+    --sidebar-accent: 0 0% 20%;
+    --sidebar-accent-foreground: 240 5% 90%;
+    --sidebar-border: 0 0% 20%;
+    --sidebar-ring: 214 53% 46%;
+    --radius: 0.75rem;
   }
 }
+
 
 @layer base {
   * {
