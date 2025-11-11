@@ -46,11 +46,6 @@ const Auth = () => {
         // 회원가입 시 처리
         await api.post("/signup", { email, password, nickname });
 
-        toast({
-          title: "Account created!",
-          description: "Welcome to MemberHub.",
-        });
-
         setIsLogin(true); // 회원가입 후 로그인 화면으로
       }
     } catch (err: any) {
