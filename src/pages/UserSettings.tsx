@@ -125,16 +125,7 @@ const UserSettings = () => {
                             </Button>
                         </CardContent>
                     </Card>
-                    <div className="flex items-center justify-between">
-                        <h1 className="text-4xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent">
-                            사용자 설정
-                        </h1>
-                        <ThemeToggle />
-                    </div>
-                    <p className="text-muted-foreground">
-                        계정, 프로필, 보안 정보를 관리할 수 있습니다.
-                    </p>
-                    <ThemeToggle />
+                
 
                     <BottomNav />
                 </div>
