@@ -1,13 +1,11 @@
 // src/components/PcroomDashboardLayout.tsx
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import api from "@/api/axiosInstance";
 import { BottomNav } from "@/components/BottomNav";
 import { Navigation } from "@/components/Navigation";
 import PcroomSeatMap from "@/components/PcroomSeatMap";
-
-
 
 interface Notice {
   id: number;
@@ -24,6 +22,7 @@ interface Favorite {
 }
 
 const PcroomDetail = () => {
+  const navigate = useNavigate();
   const token = localStorage.getItem("jwt");
   const { id } = useParams<{ id: string }>();
   const pcroomId = Number(id);
@@ -33,7 +32,6 @@ const PcroomDetail = () => {
   const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [notices, setNotices] = useState<Notice[]>([]);
 
-  // ✅ 피시방 기본 정보 (서버로부터 갱신)
   const [nameOfPcroom, setNameOfPcroom] = useState("");
   const [totalSeats, setTotalSeats] = useState(0);
   const [occupiedSeats, setOccupiedSeats] = useState(0);
@@ -117,7 +115,7 @@ const PcroomDetail = () => {
         return;
       }
       await Promise.all([
-        fetchPcroomInfo(), // ✅ 피시방 기본 정보 추가
+        fetchPcroomInfo(),
         fetchUtilization(),
         fetchFavorites(),
         fetchNotices(),
@@ -126,15 +124,6 @@ const PcroomDetail = () => {
     };
     loadData();
   }, [token, pcroomId]);
-
-  /** 좌석 정보 (임시 하드코딩) */
-  const seats = [
-    { id: 1, top: "5%", left: "5%", status: "occupied" },
-    { id: 2, top: "5%", left: "10%", status: "available" },
-    { id: 3, top: "5%", left: "15%", status: "occupied" },
-    { id: 4, top: "5%", left: "20%", status: "occupied" },
-    { id: 5, top: "5%", left: "25%", status: "occupied" },
-  ];
 
   /** 가동률 색상 */
   const utilizationColor = (() => {
@@ -154,7 +143,7 @@ const PcroomDetail = () => {
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12">
         <header className="mb-8">
           <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            {nameOfPcroom || firstFavorite?.nameOfPcroom || "피시방 이름 로딩중..."}
+            {nameOfPcroom || firstFavorite?.nameOfPcroom || "Loading..."}
           </h1>
         </header>
 
@@ -186,21 +175,25 @@ const PcroomDetail = () => {
           {/* 공지사항 카드 */}
           <Card className="p-4">
             <CardHeader>
-              <CardTitle className="text-sm font-medium text-muted-foreground">공지 사항</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                공지 사항
+              </CardTitle>
             </CardHeader>
+
             <CardContent>
               {loading ? (
-                <p className="text-sm text-muted-foreground">Loading...</p>
+                <p className="text-sm text-muted-foreground">공지사항을 불러오는 중입니다...</p>
               ) : notices.length === 0 ? (
                 <p className="text-sm text-muted-foreground">등록된 공지사항이 없습니다.</p>
               ) : (
-                <div className="mt-2 border-t border-border pt-3 space-y-3">
+                <div className="mt-2 border-t border-border pt-3 flex flex-col gap-3">
                   {notices.map((notice) => (
-                    <div
+                    <button
                       key={notice.id}
-                      className="border border-border rounded-md p-3 hover:bg-muted/40 transition-all"
+                      onClick={() => navigate(`/notice/${notice.id}`)}
+                      className="text-left border border-border rounded-md p-3 hover:bg-muted/50 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                     >
-                      <p className="font-medium text-sm">{notice.title}</p>
+                      <p className="font-medium text-sm text-foreground">{notice.title}</p>
                       <p className="text-xs text-muted-foreground mt-1">
                         {new Date(notice.creationDate).toLocaleString("ko-KR", {
                           year: "numeric",
@@ -210,7 +203,7 @@ const PcroomDetail = () => {
                           minute: "2-digit",
                         })}
                       </p>
-                    </div>
+                    </button>
                   ))}
                 </div>
               )}
@@ -218,8 +211,7 @@ const PcroomDetail = () => {
           </Card>
 
           {/* 좌석 배치도 */}
-          <PcroomSeatMap />
-
+          <PcroomSeatMap/>
         </section>
 
         <BottomNav />

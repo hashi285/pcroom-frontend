@@ -18,6 +18,7 @@ import PcroomSearch from "./pages/PcroomSearch";
 import Notices from "./pages/Notices";
 import PcroomDetail from "./pages/PcroomDetail";
 import UserSettings from "./pages/UserSettings";
+import NoticeDetailPage from "@/pages/NoticeDetailPage";
 
 const queryClient = new QueryClient();
 
@@ -90,12 +91,18 @@ const App = () => (
               }
             />
 
-              <Route
+            <Route
               path="/settings"
               element={
                 <ProtectedRoute>
                   <UserSettings />
                 </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/notice/:noticeId"
+              element={<NoticeDetailPage />
               }
             />
 
