@@ -14,7 +14,7 @@ export const Navigation = () => {
   const linkTo = (() => {
     switch (role) {
       case "ADMIN": return "/manager-dashboard";
-      case "USER": return "/manager";
+      case "USER": return "/dashboard";
       default: return "/";
     }
   })();
