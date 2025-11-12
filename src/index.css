@@ -113,3 +113,12 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+@font-face {
+    font-family: 'Ria';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2410-1@1.0/RiaSans-ExtraBold.woff2') format('woff2');
+    font-weight: normal;
+    font-display: swap;
+}
+
+

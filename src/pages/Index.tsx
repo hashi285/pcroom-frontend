@@ -14,9 +14,32 @@ const Index = () => {
       {/* Hero Section */}
       <section className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
   <div className="max-w-4xl text-center animate-fade-in">
-    <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-primary bg-clip-text text-transparent tracking-tight antialiased">
-      피방자리
-    </h1>
+<h1
+  className="
+    text-5xl md:text-6xl
+    mb-6
+    bg-gradient-primary
+    bg-clip-text
+    text-transparent
+    tracking-tight
+    subpixel-antialiased
+  "
+  style={{
+    fontFamily: "'Ria', sans-serif",
+    fontWeight: 800,
+    WebkitFontSmoothing: "antialiased",
+    MozOsxFontSmoothing: "grayscale",
+    fontSmooth: "always",
+  }}
+>
+  피방자리
+</h1>
+
+
+
+
+
+
 
     <div className="flex gap-4 justify-center">
       <Button
@@ -24,7 +47,7 @@ const Index = () => {
         className="bg-gradient-primary shadow-elegant"
         onClick={() => navigate("/auth")}
       >
-        Get Started
+        로그인
       </Button>
     </div>
   </div>
