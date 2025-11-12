@@ -133,50 +133,58 @@ const Dashboard = () => {
               </div>
 
               {/* 좌석 유형 선택 */}
-              <div className="relative inline-block">
-                <button
-                  className="flex items-center justify-between gap-2 rounded-full bg-zinc-200 dark:bg-zinc-800 py-1.5 pl-3 pr-2 text-sm"
-                  onClick={() => setSeatDropdownOpen(!seatDropdownOpen)}
-                >
-                  <span className="font-medium text-zinc-900 dark:text-white">
-                    사용할 인원 수 : {seatType}
-                  </span>
-                  <span className="material-symbols-outlined text-base text-zinc-500 dark:text-zinc-400">
-                    expand_more
-                  </span>
-                </button>
+<div className="relative inline-block">
+  {/* 버튼 */}
+  <button
+    className="flex items-center justify-between gap-2 rounded-full bg-zinc-300/100 dark:bg-zinc-800 py-1.5 pl-3 pr-2 text-sm shadow-sm transition-colors duration-150 hover:bg-zinc-400/100 dark:hover:bg-zinc-700"
+    onClick={() => setSeatDropdownOpen(!seatDropdownOpen)}
+  >
+    <span className="font-medium text-zinc-900 dark:text-white transition-colors duration-150">
+      사용할 인원 수 : {seatType}
+    </span>
+    <span className="material-symbols-outlined text-base text-zinc-500 dark:text-zinc-400 transition-colors duration-150">
+      expand_more
+    </span>
+  </button>
 
-                {seatDropdownOpen && (
-                  <div className="absolute top-full z-10 mt-2 w-48 origin-top-left overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-700 bg-background-light dark:bg-zinc-800 shadow-xl">
-                    <ul className="flex flex-col text-sm">
-                      {["1", "2", "3", "4", "5"].map((type) => (
-                        <li key={type}>
-                          <a
-                            className={`flex items-center gap-3 p-3 ${seatType === type
-                                ? "bg-primary/20 text-primary dark:text-primary"
-                                : "text-zinc-900 dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700"
-                              } cursor-pointer`}
-                            onClick={() => {
-                              setSeatType(type);
-                              setSeatDropdownOpen(false);
-                            }}
-                          >
-                            <span className="material-symbols-outlined text-lg">
-                              {type === "2" ? "chair" : type === "3" ? "people" : "stadia_controller"}
-                            </span>
-                            <span>{type}</span>
-                            {seatType === type && (
-                              <span className="material-symbols-outlined ml-auto text-lg text-primary">
-                                check
-                              </span>
-                            )}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
+  {/* 드롭다운 */}
+  {seatDropdownOpen && (
+    <div className="absolute top-full z-10 mt-2 w-48 origin-top-left overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white/100 dark:bg-zinc-900 shadow-xl transition-colors duration-150">
+      <ul className="flex flex-col text-sm">
+        {["1", "2", "3", "4", "5"].map((type) => (
+          <li key={type}>
+            <a
+              className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors duration-150 ${
+                seatType === type
+                  ? "bg-primary/20 text-primary dark:text-primary"
+                  : "text-zinc-900 dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700"
+              }`}
+              onClick={() => {
+                setSeatType(type);
+                setSeatDropdownOpen(false);
+              }}
+            >
+              <span className="material-symbols-outlined text-lg">
+                {type === "2"
+                  ? "chair"
+                  : type === "3"
+                  ? "people"
+                  : "stadia_controller"}
+              </span>
+              <span>{type}</span>
+              {seatType === type && (
+                <span className="material-symbols-outlined ml-auto text-lg text-primary">
+                  check
+                </span>
+              )}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )}
+</div>
+
             </CardHeader>
 
             <CardContent>
