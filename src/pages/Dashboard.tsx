@@ -2,17 +2,18 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, Calendar } from "lucide-react";
+import { Mail, Calendar, Plus, X } from "lucide-react";
 import { useUser } from "@/context/UserProvider";
 import api from "@/api/axiosInstance";
 import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
-import { Plus, X } from "lucide-react";
 
 interface Favorite {
   pcroomId: number;
   nameOfPcroom: string;
   utilization?: number;
+  seatCount?: number;
+  usedSeatCount?: number;
 }
 
 interface Pcroom {
@@ -32,7 +33,6 @@ const Dashboard = () => {
   const token = localStorage.getItem("jwt");
   const [showModal, setShowModal] = useState(false);
 
-  // 좌석 유형 선택 상태
   const [seatType, setSeatType] = useState("1");
   const [seatDropdownOpen, setSeatDropdownOpen] = useState(false);
 
@@ -95,7 +95,12 @@ const Dashboard = () => {
       const favoritesWithUtil = await Promise.all(
         data.map(async (fav: Favorite) => {
           const utilRes = await safeApiGet(`/pcrooms/${fav.pcroomId}/utilization`);
-          return { ...fav, utilization: utilRes?.utilization ?? 0 };
+          return {
+            ...fav,
+            utilization: utilRes?.utilization ?? 0,
+            seatCount: utilRes?.seatCount ?? 0,
+            usedSeatCount: utilRes?.usedSeatCount ?? 0,
+          };
         })
       );
       setFavorites(favoritesWithUtil.sort((a, b) => b.pcroomId - a.pcroomId));
@@ -117,7 +122,6 @@ const Dashboard = () => {
       <Navigation />
       <main className="container mx-auto px-3 sm:px-4 pt-24 pb-20">
         <div className="max-w-2xl mx-auto animate-fade-in">
-
           {/* 내 피시방 카드 */}
           <Card className="shadow-subtle bg-gradient-card border-primary/20 rounded-xl w-full">
             <CardHeader className="flex items-start justify-between">
@@ -128,7 +132,7 @@ const Dashboard = () => {
                 </CardDescription>
               </div>
 
-              {/* 좌석 유형 선택 버튼 */}
+              {/* 좌석 유형 선택 */}
               <div className="relative inline-block">
                 <button
                   className="flex items-center justify-between gap-2 rounded-full bg-zinc-200 dark:bg-zinc-800 py-1.5 pl-3 pr-2 text-sm"
@@ -169,19 +173,6 @@ const Dashboard = () => {
                           </a>
                         </li>
                       ))}
-
-                      {/* 직접 입력 필드 */}
-                      <li className="p-2 border-t border-zinc-200 dark:border-zinc-700">
-                        <input
-                          type="text"
-                          placeholder="직접 입력..."
-                          className="w-full rounded-md border border-border px-2 py-1 text-sm bg-background text-foreground dark:bg-zinc-700 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"
-                          value={seatType}
-                          onChange={(e) => setSeatType(e.target.value)}
-                          onKeyDown={(e) => e.key === "Enter" && setSeatDropdownOpen(false)}
-                          onBlur={() => setSeatDropdownOpen(false)}
-                        />
-                      </li>
                     </ul>
                   </div>
                 )}
@@ -197,6 +188,8 @@ const Dashboard = () => {
                 <div className="grid gap-3">
                   {favorites.map((fav) => {
                     const utilization = fav.utilization ?? 0;
+                    const used = fav.usedSeatCount ?? 0;
+                    const total = fav.seatCount ?? 0;
 
                     let colorClass = "text-slate-500 bg-slate-100";
                     if (utilization >= 80) colorClass = "text-red-500 bg-red-500/10";
@@ -225,7 +218,7 @@ const Dashboard = () => {
                                 {fav.nameOfPcroom}
                               </p>
                               <span className="text-sm text-muted-foreground">
-                                12/240석
+                                {used}/{total}석
                               </span>
                             </div>
                           </div>
@@ -243,9 +236,7 @@ const Dashboard = () => {
                 </div>
               )}
             </CardContent>
-            
           </Card>
-
 
           {/* 공지사항 카드 */}
           <div className="mt-8">
@@ -263,10 +254,9 @@ const Dashboard = () => {
                 </CardTitle>
               </CardHeader>
             </Card>
-
           </div>
 
-
+          {/* 업데이트 카드 */}
           <div className="mt-8">
             <Card className="shadow-subtle bg-gradient-card border-primary/20 rounded-xl w-full">
               <CardHeader>
@@ -279,7 +269,6 @@ const Dashboard = () => {
               <CardContent>
                 <div className="space-y-2 text-sm">
                   <div className="flex items-center gap-2">
-
                     <div>응애</div>
                   </div>
                   {user?.userId && (
@@ -292,7 +281,7 @@ const Dashboard = () => {
             </Card>
           </div>
 
-          {/* Floating Button → 검색 모달 열기 */}
+          {/* 플로팅 버튼 */}
           <div className="pointer-events-none fixed bottom-20 right-6 z-50 flex justify-end">
             <button
               className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-lg shadow-primary/30 transition-transform hover:scale-105"
@@ -306,7 +295,6 @@ const Dashboard = () => {
           {showModal && (
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
               <div className="bg-card text-foreground rounded-xl shadow-elegant p-6 w-[90%] max-w-2xl relative animate-fade-in border border-border">
-                {/* 닫기 버튼 */}
                 <button
                   onClick={() => setShowModal(false)}
                   className="absolute top-4 right-4 flex items-center justify-center w-9 h-9 rounded-full bg-muted text-muted-foreground shadow-sm transition-all hover:bg-accent hover:text-accent-foreground active:scale-95"
@@ -360,7 +348,6 @@ const Dashboard = () => {
               </div>
             </div>
           )}
-
 
           <BottomNav />
         </div>
