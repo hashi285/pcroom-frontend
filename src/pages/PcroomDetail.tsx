@@ -31,7 +31,6 @@ const PcroomDetail = () => {
   const [utilization, setUtilization] = useState(0);
   const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [notices, setNotices] = useState<Notice[]>([]);
-
   const [nameOfPcroom, setNameOfPcroom] = useState("");
   const [totalSeats, setTotalSeats] = useState(0);
   const [occupiedSeats, setOccupiedSeats] = useState(0);
@@ -52,21 +51,17 @@ const PcroomDetail = () => {
 
   /** ✅ 피시방 기본 정보 조회 */
   const fetchPcroomInfo = async () => {
-    if (!pcroomId) return;
     const res = await safeApiGet(`/pcrooms/pcroomInfo/${pcroomId}`);
     if (res) {
-      setNameOfPcroom(res.nameOfPcroom ?? "피시방 이름 없음");
+      setNameOfPcroom(res.nameOfPcroom ?? "이름 없음");
       setTotalSeats(res.seatCount ?? 0);
     }
   };
 
-  /** 즐겨찾기 + 각 피시방 가동률 조회 */
+  /** 즐겨찾기 + 가동률 조회 */
   const fetchFavorites = async () => {
     const data = await safeApiGet("/favorites");
-    if (!Array.isArray(data)) {
-      setFavorites([]);
-      return;
-    }
+    if (!Array.isArray(data)) return setFavorites([]);
 
     const favoritesWithUtil = await Promise.all(
       data.map(async (fav: Favorite) => {
@@ -74,8 +69,8 @@ const PcroomDetail = () => {
         return {
           ...fav,
           utilization: utilRes?.utilization ?? 0,
-          totalSeats: utilRes?.totalSeats ?? 0,
-          occupiedSeats: utilRes?.occupiedSeats ?? 0,
+          totalSeats: utilRes?.seatCount ?? 0,
+          occupiedSeats: utilRes?.usedSeatCount ?? 0,
         };
       })
     );
@@ -83,37 +78,33 @@ const PcroomDetail = () => {
     setFavorites(favoritesWithUtil.sort((a, b) => b.pcroomId - a.pcroomId));
   };
 
-  /** 특정 피시방 가동률 조회 */
+  /** 현재 피시방 가동률 */
   const fetchUtilization = async () => {
-    if (!pcroomId) return;
     const res = await safeApiGet(`/pcrooms/${pcroomId}/utilization`);
     if (res) {
       setUtilization(res.utilization ?? 0);
-      setTotalSeats(res.totalSeats ?? totalSeats);
-      setOccupiedSeats(res.occupiedSeats ?? 0);
+      setTotalSeats(res.seatCount ?? totalSeats);
+      setOccupiedSeats(res.usedSeatCount ?? 0);
     } else {
       setUtilization((occupiedSeats / totalSeats) * 100);
     }
   };
 
-  /** 공지사항 목록 조회 */
+  /** 공지사항 */
   const fetchNotices = async () => {
-    if (!pcroomId) return;
     const res = await safeApiGet(`/notices/${pcroomId}`);
-    if (Array.isArray(res)) {
-      setNotices(res);
-    } else {
-      setNotices([]);
-    }
+    if (Array.isArray(res)) setNotices(res);
+    else setNotices([]);
   };
 
-  /** 초기 데이터 로드 */
+  /** 초기 데이터 */
   useEffect(() => {
-    const loadData = async () => {
-      if (!token || !pcroomId) {
-        setLoading(false);
-        return;
-      }
+    if (!token || !pcroomId) {
+      setLoading(false);
+      return;
+    }
+
+    const loadAll = async () => {
       await Promise.all([
         fetchPcroomInfo(),
         fetchUtilization(),
@@ -122,10 +113,11 @@ const PcroomDetail = () => {
       ]);
       setLoading(false);
     };
-    loadData();
+
+    loadAll();
   }, [token, pcroomId]);
 
-  /** 가동률 색상 */
+  /** 가동률 색상 계산 */
   const utilizationColor = (() => {
     if (utilization >= 80) return "text-red-500 bg-red-500/10";
     if (utilization >= 60) return "text-orange-500 bg-orange-500/10";
@@ -134,20 +126,20 @@ const PcroomDetail = () => {
     return "text-slate-500 bg-slate-100";
   })();
 
-  const firstFavorite = favorites[0];
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-6">
+    <div className="min-h-screen bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm transition-colors">
       <Navigation />
 
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12">
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16">
+        {/* 제목 영역 */}
         <header className="mb-8">
-          <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            {nameOfPcroom || firstFavorite?.nameOfPcroom || "Loading..."}
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+            {nameOfPcroom || "피시방 정보"}
           </h1>
         </header>
 
-        <section className="grid grid-cols-2 gap-4 mb-6">
+        {/* 요약 카드 */}
+        <section className="grid grid-cols-2 gap-4 mb-8">
           <Card className={`p-4 flex flex-col justify-center ${utilizationColor}`}>
             <p className="text-sm font-medium text-muted-foreground">실시간 사용률</p>
             <p className="text-lg font-bold mt-1">
@@ -155,43 +147,44 @@ const PcroomDetail = () => {
             </p>
           </Card>
 
-          <Card className="p-4 flex flex-col justify-center">
+          <Card className="p-4 flex flex-col justify-center bg-white/80 dark:bg-zinc-800/80 border border-border">
             <p className="text-sm font-medium text-muted-foreground">총 좌석</p>
-            <p className="text-lg font-bold mt-1">{loading ? "..." : totalSeats}</p>
+            <p className="text-lg font-bold mt-1">{totalSeats || "-"}</p>
           </Card>
 
-          <Card className="p-4 flex flex-col justify-center">
+          <Card className="p-4 flex flex-col justify-center bg-white/80 dark:bg-zinc-800/80 border border-border">
             <p className="text-sm font-medium text-muted-foreground">사용 중</p>
-            <p className="text-lg font-bold text-status-in-use mt-1">{occupiedSeats}</p>
+            <p className="text-lg font-bold text-emerald-500 mt-1">{occupiedSeats}</p>
           </Card>
 
-          <Card className="p-4 flex flex-col justify-center">
+          <Card className="p-4 flex flex-col justify-center bg-white/80 dark:bg-zinc-800/80 border border-border">
             <p className="text-sm font-medium text-muted-foreground">빈자리</p>
-            <p className="text-lg font-bold mt-1">{emptySeats}</p>
+            <p className="text-lg font-bold mt-1">{emptySeats >= 0 ? emptySeats : "-"}</p>
           </Card>
         </section>
 
+        {/* 공지사항 + 좌석맵 */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* 공지사항 카드 */}
-          <Card className="p-4">
+          {/* 공지사항 */}
+          <Card className="p-4 bg-white/80 dark:bg-zinc-800/80 border border-border rounded-xl shadow-sm">
             <CardHeader>
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
                 공지 사항
               </CardTitle>
             </CardHeader>
 
             <CardContent>
               {loading ? (
-                <p className="text-sm text-muted-foreground">공지사항을 불러오는 중입니다...</p>
+                <p className="text-sm text-muted-foreground">공지사항을 불러오는 중...</p>
               ) : notices.length === 0 ? (
                 <p className="text-sm text-muted-foreground">등록된 공지사항이 없습니다.</p>
               ) : (
-                <div className="mt-2 border-t border-border pt-3 flex flex-col gap-3">
+                <div className="mt-2 flex flex-col gap-3">
                   {notices.map((notice) => (
                     <button
                       key={notice.id}
                       onClick={() => navigate(`/notice/${notice.id}`)}
-                      className="text-left border border-border rounded-md p-3 hover:bg-muted/50 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                      className="text-left border border-border rounded-lg p-3 hover:bg-muted/50 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                     >
                       <p className="font-medium text-sm text-foreground">{notice.title}</p>
                       <p className="text-xs text-muted-foreground mt-1">
@@ -211,7 +204,7 @@ const PcroomDetail = () => {
           </Card>
 
           {/* 좌석 배치도 */}
-          <PcroomSeatMap/>
+          <PcroomSeatMap pcroomId={pcroomId} />
         </section>
 
         <BottomNav />
