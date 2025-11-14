@@ -137,11 +137,10 @@ const PcroomSeatMap = ({ pcroomId }: { pcroomId: number }) => {
               {seats.map((seat) => (
                 <div
                   key={seat.id}
-                  className={`absolute flex items-center justify-center text-xs font-bold rounded-md shadow-sm transition-colors duration-150 ${
-                    seat.status === "occupied"
-                      ? "bg-blue-500 text-white"
-                      : "bg-zinc-400 text-white"
-                  }`}
+                  className={`absolute flex items-center justify-center text-xs font-bold rounded-md shadow-sm transition-colors duration-150 ${seat.status === "occupied"
+                    ? "bg-blue-500 text-white"
+                    : "bg-zinc-400 text-white"
+                    }`}
                   style={{
                     top: `${seat.top}px`,
                     left: `${seat.left}px`,

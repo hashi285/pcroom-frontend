@@ -133,57 +133,56 @@ const Dashboard = () => {
               </div>
 
               {/* 좌석 유형 선택 */}
-<div className="relative inline-block">
-  {/* 버튼 */}
-  <button
-    className="flex items-center justify-between gap-2 rounded-full bg-zinc-300/100 dark:bg-zinc-800 py-1.5 pl-3 pr-2 text-sm shadow-sm transition-colors duration-150 hover:bg-zinc-400/100 dark:hover:bg-zinc-700"
-    onClick={() => setSeatDropdownOpen(!seatDropdownOpen)}
-  >
-    <span className="font-medium text-zinc-900 dark:text-white transition-colors duration-150">
-      사용할 인원 수 : {seatType}
-    </span>
-    <span className="material-symbols-outlined text-base text-zinc-500 dark:text-zinc-400 transition-colors duration-150">
-      expand_more
-    </span>
-  </button>
+              <div className="relative inline-block">
+                {/* 버튼 */}
+                <button
+                  className="flex items-center justify-between gap-2 rounded-full bg-zinc-300/100 dark:bg-zinc-800 py-1.5 pl-3 pr-2 text-sm shadow-sm transition-colors duration-150 hover:bg-zinc-400/100 dark:hover:bg-zinc-700"
+                  onClick={() => setSeatDropdownOpen(!seatDropdownOpen)}
+                >
+                  <span className="font-medium text-zinc-900 dark:text-white transition-colors duration-150">
+                    사용할 인원 수 : {seatType}
+                  </span>
+                  <span className="material-symbols-outlined text-base text-zinc-500 dark:text-zinc-400 transition-colors duration-150">
+                    expand_more
+                  </span>
+                </button>
 
-  {/* 드롭다운 */}
-  {seatDropdownOpen && (
-    <div className="absolute top-full z-10 mt-2 w-48 origin-top-left overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white/100 dark:bg-zinc-900 shadow-xl transition-colors duration-150">
-      <ul className="flex flex-col text-sm">
-        {["1", "2", "3", "4", "5"].map((type) => (
-          <li key={type}>
-            <a
-              className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors duration-150 ${
-                seatType === type
-                  ? "bg-primary/20 text-primary dark:text-primary"
-                  : "text-zinc-900 dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700"
-              }`}
-              onClick={() => {
-                setSeatType(type);
-                setSeatDropdownOpen(false);
-              }}
-            >
-              <span className="material-symbols-outlined text-lg">
-                {type === "2"
-                  ? "chair"
-                  : type === "3"
-                  ? "people"
-                  : "stadia_controller"}
-              </span>
-              <span>{type}</span>
-              {seatType === type && (
-                <span className="material-symbols-outlined ml-auto text-lg text-primary">
-                  check
-                </span>
-              )}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </div>
-  )}
-</div>
+                {/* 드롭다운 */}
+                {seatDropdownOpen && (
+                  <div className="absolute top-full z-10 mt-2 w-48 origin-top-left overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white/100 dark:bg-zinc-900 shadow-xl transition-colors duration-150">
+                    <ul className="flex flex-col text-sm">
+                      {["1", "2", "3", "4", "5"].map((type) => (
+                        <li key={type}>
+                          <a
+                            className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors duration-150 ${seatType === type
+                              ? "bg-primary/20 text-primary dark:text-primary"
+                              : "text-zinc-900 dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700"
+                              }`}
+                            onClick={() => {
+                              setSeatType(type);
+                              setSeatDropdownOpen(false);
+                            }}
+                          >
+                            <span className="material-symbols-outlined text-lg">
+                              {type === "2"
+                                ? "chair"
+                                : type === "3"
+                                  ? "people"
+                                  : "stadia_controller"}
+                            </span>
+                            <span>{type}</span>
+                            {seatType === type && (
+                              <span className="material-symbols-outlined ml-auto text-lg text-primary">
+                                check
+                              </span>
+                            )}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
 
             </CardHeader>
 
@@ -264,29 +263,81 @@ const Dashboard = () => {
             </Card>
           </div>
 
-          {/* 업데이트 카드 */}
+          {/* 광고 카드 2 */}
           <div className="mt-8">
             <Card className="shadow-subtle bg-gradient-card border-primary/20 rounded-xl w-full">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Mail className="w-5 h-5 text-primary" />
-                  <span className="font-semibold">업데이트 소식</span>
-                </CardTitle>
-                <CardDescription>2025.11.11 ~ 2026.04.31</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center gap-2">
-                    <div>응애</div>
+              <CardContent className="p-0">
+                <div
+                  className="w-full bg-center bg-no-repeat bg-cover flex flex-col justify-between overflow-hidden rounded-xl min-h-[120px] p-4 relative"
+                  style={{
+                    backgroundImage: `url("https://lh3.googleusercontent.com/aida-public/AB6AXuDUxBlwdFeOkZLszxSz74EVxCDi9otuUPvEjA-bx4VYprqWbDy-TqQg41jV88Opm1IEZdxiSEzwGS7vENd1p3-Zmvgy-BM3FVjjV7A-xg-dxTayq5MJOIurnasKRImxXBdrQXmHzHN3wk4q9fYgG6UwrA2H9ZWW33bvsoTFDWIbV1oWHSidrWK_h71iMiZnjEyQa-Wbs2UUsaKVR8j8FWxyl_MJp9q8N84T4KTLa-VBAAonwg3kPSQJaVuFU497t0yytg5f20UT3Cy5")`,
+                  }}
+                  aria-label="advertisement for a new fantasy RPG game"
+                >
+                  {/* 검은색 오버레이 */}
+                  <div className="absolute inset-0 bg-black/40 rounded-xl"></div>
+
+                  {/* 내용 */}
+                  <div className="relative flex flex-col z-10">
+                    <span className="text-xs font-semibold bg-black/50 text-white rounded-full px-2 py-0.5 w-fit">
+                      AD
+                    </span>
+                    <h3 className="text-white text-lg font-bold mt-2">
+                      이터널 소드 신규 시즌 오픈
+                    </h3>
+                    <p className="text-gray-200 text-sm">
+                      지금 접속하고 한정판 스킨 받으세요!
+                    </p>
                   </div>
-                  {user?.userId && (
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">업데이트 한다</span>
-                    </div>
-                  )}
                 </div>
               </CardContent>
             </Card>
+          </div>
+
+          {/* 광고 카드 */}
+          <div className="mt-8">
+            <div className="shadow-subtle bg-gradient-card border border-primary/20 rounded-xl w-full">
+              <div className="p-0">
+                <div className="p-4 border-b border-white/10 bg-[#1E1E1E]/50 rounded-lg flex flex-col @xl:flex-row @xl:items-start gap-4">
+                  {/* 이미지 */}
+                  <div
+                    className="w-full @xl:w-40 @xl:flex-shrink-0 bg-center bg-no-repeat aspect-video @xl:aspect-square bg-cover rounded-lg"
+                    style={{
+                      backgroundImage: `url("https://lh3.googleusercontent.com/aida-public/AB6AXuARs6qyCjs5SY_YTInVubnjuZkUfrq6e1aiz-z4ZANitK-uG3g9TN964TqNOUtx0vgX6gvAx_vi--GRjQGgQLA5G6PiD-_j_rT1rXjfH7BREDmAQqM_SSkQdCKAk9L3--uJY3ZwhifUb-uNmGeMl2XJP3FUqwzwLVKvola7o2Tubu2CBfZX9xbBDpl0Hs5MqT20_CvIRLK_B2hJvym05DWjyDSuQ2bDiXHh34GPSIovErNnCfy2V0Ozk3azrXC-AwGXWHh8PZgbWxs0")`,
+                    }}
+                    aria-label="Close up on a delicious ramen dish"
+                  />
+
+                  {/* 내용 */}
+                  <div className="flex w-full min-w-0 grow flex-col items-stretch justify-center gap-1.5">
+                    <div className="flex items-center gap-2">
+                      <p className="text-[#A9A9A9] text-sm font-semibold">Sponsored</p>
+                      <span className="text-xs font-semibold bg-primary/20 text-primary rounded-full px-2 py-0.5">
+                        AD
+                      </span>
+                    </div>
+
+                    <p className="text-white text-lg font-bold leading-tight tracking-[-0.015em]">
+                      이번 주말엔 피캉스! 라면이 공짜!
+                    </p>
+
+                    <p className="text-[#A9A9A9] text-base font-normal leading-normal">
+                      블랙홀 PC방 강남점에서 진행하는 특별 이벤트
+                    </p>
+
+                    <div className="flex items-end gap-3 justify-between mt-2">
+                      <p className="text-[#A9A9A9] text-base font-normal leading-normal">
+                        지금 바로 확인해보세요!
+                      </p>
+
+                      <button className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-4 bg-primary text-white text-sm font-medium leading-normal">
+                        <span className="truncate">쿠폰 받기</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* 플로팅 버튼 */}

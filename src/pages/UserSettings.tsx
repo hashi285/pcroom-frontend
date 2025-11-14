@@ -125,7 +125,7 @@ const UserSettings = () => {
                             </Button>
                         </CardContent>
                     </Card>
-                
+
 
                     <BottomNav />
                 </div>

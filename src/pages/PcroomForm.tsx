@@ -105,12 +105,12 @@ const PcroomForm = () => {
       prev.map((s) =>
         s.seatNum === seatNum
           ? {
-              ...s,
-              posX: snappedX,
-              posY: snappedY,
-              x: snappedX / seatSize + 1,
-              y: snappedY / seatSize + 1,
-            }
+            ...s,
+            posX: snappedX,
+            posY: snappedY,
+            x: snappedX / seatSize + 1,
+            y: snappedY / seatSize + 1,
+          }
           : s
       )
     );
@@ -188,10 +188,9 @@ const PcroomForm = () => {
                   ref={seat.ref}
                   onClick={() => handleSeatClick(seat.seatNum)}
                   className={`absolute flex items-center justify-center border-2 rounded-lg cursor-pointer font-semibold text-base transition-all duration-150 select-none
-                    ${
-                      seat.seatIp
-                        ? "bg-green-500 text-white border-green-700 shadow-md"
-                        : "bg-white text-gray-800 border-gray-400 hover:bg-gray-200"
+                    ${seat.seatIp
+                      ? "bg-green-500 text-white border-green-700 shadow-md"
+                      : "bg-white text-gray-800 border-gray-400 hover:bg-gray-200"
                     }`}
                   style={{
                     width: seatSize - 6,

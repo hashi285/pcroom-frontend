@@ -35,7 +35,7 @@ const Notices = () => {
                 <Mail className="w-5 h-5 text-primary" />
                 <CardDescription>최신 공지사항</CardDescription>
               </CardTitle>
-              
+
             </CardHeader>
             <CardContent>
               <div className="flex flex-col gap-4">

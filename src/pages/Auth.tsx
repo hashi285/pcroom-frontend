@@ -34,11 +34,6 @@ const Auth = () => {
         // 새 토큰 저장
         localStorage.setItem("jwt", token);
 
-        toast({
-          title: "Welcome back!",
-          description: "Signed in successfully",
-        });
-
         if (role === "ADMIN") navigate("/manager-dashboard");
         else navigate("/dashboard");
         
