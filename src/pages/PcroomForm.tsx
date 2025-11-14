@@ -1,7 +1,6 @@
 // src/pages/ManagerDashboard/PcroomForm.tsx
 import { useState, useEffect } from "react";
 import axios from "axios";
-import Draggable from "react-draggable";
 import {
   Card,
   CardHeader,
@@ -29,7 +28,6 @@ interface Seat {
   y: number;
   posX: number;
   posY: number;
-  ref: React.RefObject<HTMLDivElement>;
 }
 
 const PcroomForm = () => {
@@ -42,7 +40,7 @@ const PcroomForm = () => {
   });
 
   const [seats, setSeats] = useState<Seat[]>([]);
-  const [seatSize, setSeatSize] = useState(90); // 좌석 크기 넉넉히
+  const [seatSize, setSeatSize] = useState(90);
   const [containerSize, setContainerSize] = useState({ width: 800, height: 600 });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,7 +51,6 @@ const PcroomForm = () => {
     }));
   };
 
-  /** 좌석 생성 */
   const generateSeats = () => {
     const seatArr: Seat[] = [];
     let seatNum = 1;
@@ -69,7 +66,6 @@ const PcroomForm = () => {
           y,
           posX: (x - 1) * seatSize,
           posY: (y - 1) * seatSize,
-          ref: React.createRef<HTMLDivElement>(),
         });
         seatNum++;
       }
@@ -77,7 +73,6 @@ const PcroomForm = () => {
     setSeats(seatArr);
   };
 
-  /** 좌석 클릭 -> IP 입력 */
   const handleSeatClick = (seatNum: number) => {
     const ip = prompt(
       "IP를 입력하세요:",
@@ -90,33 +85,6 @@ const PcroomForm = () => {
     }
   };
 
-  /** 드래그 중첩 방지 */
-  const handleDragStop = (seatNum: number, data: { x: number; y: number }) => {
-    const snappedX = Math.round(data.x / seatSize) * seatSize;
-    const snappedY = Math.round(data.y / seatSize) * seatSize;
-
-    // 중복 좌표 체크
-    const overlap = seats.some(
-      (s) => s.seatNum !== seatNum && s.posX === snappedX && s.posY === snappedY
-    );
-    if (overlap) return; // 중첩 방지
-
-    setSeats((prev) =>
-      prev.map((s) =>
-        s.seatNum === seatNum
-          ? {
-            ...s,
-            posX: snappedX,
-            posY: snappedY,
-            x: snappedX / seatSize + 1,
-            y: snappedY / seatSize + 1,
-          }
-          : s
-      )
-    );
-  };
-
-  /** 등록 요청 */
   const handleSubmit = async () => {
     try {
       await axios.post("http://localhost:8080/pcrooms", form, {
@@ -134,79 +102,30 @@ const PcroomForm = () => {
     }
   };
 
-  /** 화면 크기 따라 자동 크기 조정 */
   useEffect(() => {
-    const updateLayout = () => {
-      if (!form.width || !form.height) return;
+    if (!form.width || !form.height) return;
 
-      const availableWidth = window.innerWidth * 0.65;
-      const availableHeight = window.innerHeight * 0.75;
+    const availableWidth = window.innerWidth * 0.65;
+    const availableHeight = window.innerHeight * 0.75;
 
-      const seatWidth = availableWidth / form.width;
-      const seatHeight = availableHeight / form.height;
-      const size = Math.min(seatWidth, seatHeight, 120); // 최대 120px 제한
+    const seatWidth = availableWidth / form.width;
+    const seatHeight = availableHeight / form.height;
+    const size = Math.min(seatWidth, seatHeight, 120);
 
-      setSeatSize(size);
-      setContainerSize({
-        width: form.width * size,
-        height: form.height * size,
-      });
-    };
-
-    updateLayout();
-    window.addEventListener("resize", updateLayout);
-    return () => window.removeEventListener("resize", updateLayout);
+    setSeatSize(size);
+    setContainerSize({
+      width: form.width * size,
+      height: form.height * size,
+    });
   }, [form.width, form.height]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-6">
+    <div className="min-h-screen bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm p-6">
       <Navigation />
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12">
         <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-8">
-
-          {/* 좌석판 */}
-          <div
-            className="flex-shrink-0 relative border border-border rounded bg-gray-100 overflow-auto shadow-inner"
-            style={{
-              width: containerSize.width,
-              height: containerSize.height,
-              backgroundImage:
-                "linear-gradient(to right, #e0e0e0 1px, transparent 1px), linear-gradient(to bottom, #e0e0e0 1px, transparent 1px)",
-              backgroundSize: `${seatSize}px ${seatSize}px`,
-            }}
-          >
-            {seats.map((seat) => (
-              <Draggable
-                key={seat.seatNum}
-                position={{ x: seat.posX, y: seat.posY }}
-                onStop={(e, data) => handleDragStop(seat.seatNum, data)}
-                nodeRef={seat.ref}
-                bounds="parent"
-                grid={[seatSize, seatSize]} // 격자 스냅
-              >
-                <div
-                  ref={seat.ref}
-                  onClick={() => handleSeatClick(seat.seatNum)}
-                  className={`absolute flex items-center justify-center border-2 rounded-lg cursor-pointer font-semibold text-base transition-all duration-150 select-none
-                    ${seat.seatIp
-                      ? "bg-green-500 text-white border-green-700 shadow-md"
-                      : "bg-white text-gray-800 border-gray-400 hover:bg-gray-200"
-                    }`}
-                  style={{
-                    width: seatSize - 6,
-                    height: seatSize - 6,
-                    left: seat.posX + 3,
-                    top: seat.posY + 3,
-                  }}
-                >
-                  {seat.seatNum}
-                </div>
-              </Draggable>
-            ))}
-          </div>
-
           {/* 피시방 등록 카드 */}
-          <Card className="shadow-subtle hover:shadow-elegant transition-all duration-300 flex-1">
+          <Card className="shadow-subtle hover:shadow-elegant transition-all duration-300 flex-1 p-4 bg-white/80 dark:bg-zinc-800/80 border border-border rounded-xl">
             <CardHeader>
               <CardTitle>피시방 등록</CardTitle>
               <CardDescription>
@@ -215,52 +134,54 @@ const PcroomForm = () => {
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 mb-4">
-                <input
-                  type="text"
-                  name="nameOfPcroom"
-                  placeholder="피시방 이름"
-                  value={form.nameOfPcroom}
-                  onChange={handleInputChange}
-                  className="border p-2 rounded focus:ring-2 focus:ring-primary/50"
-                />
-                <input
-                  type="number"
-                  name="seatCount"
-                  placeholder="좌석 수"
-                  value={form.seatCount || ""}
-                  onChange={handleInputChange}
-                  className="border p-2 rounded focus:ring-2 focus:ring-primary/50"
-                />
-                <input
-                  type="number"
-                  name="width"
-                  placeholder="가로 배열 수"
-                  value={form.width || ""}
-                  onChange={handleInputChange}
-                  className="border p-2 rounded focus:ring-2 focus:ring-primary/50"
-                />
-                <input
-                  type="number"
-                  name="height"
-                  placeholder="세로 배열 수"
-                  value={form.height || ""}
-                  onChange={handleInputChange}
-                  className="border p-2 rounded focus:ring-2 focus:ring-primary/50"
-                />
-                <input
-                  type="number"
-                  name="port"
-                  placeholder="포트 번호"
-                  value={form.port || ""}
-                  onChange={handleInputChange}
-                  className="border p-2 rounded focus:ring-2 focus:ring-primary/50"
-                />
-                <Button size="lg" onClick={generateSeats}>
-                  좌석 생성
-                </Button>
-                <Button size="lg" onClick={handleSubmit}>
-                  저장
-                </Button>
+                <input type="text" name="nameOfPcroom" placeholder="피시방 이름" value={form.nameOfPcroom} onChange={handleInputChange} className="border p-2 rounded focus:ring-2 focus:ring-primary/50" />
+                <input type="number" name="seatCount" placeholder="좌석 수" value={form.seatCount || ""} onChange={handleInputChange} className="border p-2 rounded focus:ring-2 focus:ring-primary/50" />
+                <input type="number" name="width" placeholder="가로 배열 수" value={form.width || ""} onChange={handleInputChange} className="border p-2 rounded focus:ring-2 focus:ring-primary/50" />
+                <input type="number" name="height" placeholder="세로 배열 수" value={form.height || ""} onChange={handleInputChange} className="border p-2 rounded focus:ring-2 focus:ring-primary/50" />
+                <input type="number" name="port" placeholder="포트 번호" value={form.port || ""} onChange={handleInputChange} className="border p-2 rounded focus:ring-2 focus:ring-primary/50" />
+                <Button size="lg" onClick={generateSeats}>좌석 생성</Button>
+                <Button size="lg" onClick={handleSubmit }>저장</Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 좌석판 - PcroomSeatMap 스타일로 통일 */}
+          <Card className="relative w-full h-[80vh] flex-1 p-4 bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 shadow-md">
+            <CardHeader className="pb-3 border-b border-zinc-200 dark:border-zinc-800">
+              <CardTitle className="text-base font-semibold text-zinc-700 dark:text-zinc-300">
+                좌석 배치도
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="relative w-full h-[calc(80vh-80px)] flex items-center justify-center">
+              <div
+                className="relative overflow-auto rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900"
+                style={{ width: "100%", height: "100%" }}
+              >
+                <div
+                  className="relative mx-auto my-auto origin-top-left transition-transform duration-150"
+                  style={{
+                    width: containerSize.width,
+                    height: containerSize.height,
+                    transform: `scale(1)`,
+                  }}
+                >
+                  {seats.map((seat) => (
+                    <div
+                      key={seat.seatNum}
+                      onClick={() => handleSeatClick(seat.seatNum)}
+                      className={`absolute flex items-center justify-center text-xs font-bold rounded-md shadow-sm transition-colors duration-150 cursor-pointer
+                        ${seat.seatIp ? "bg-blue-500 text-white" : "bg-zinc-400 text-white"}`}
+                      style={{
+                        top: seat.posY,
+                        left: seat.posX,
+                        width: seatSize - 4,
+                        height: seatSize - 4,
+                      }}
+                    >
+                      {seat.seatNum}
+                    </div>
+                  ))}
+                </div>
               </div>
             </CardContent>
           </Card>

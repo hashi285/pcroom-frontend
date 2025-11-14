@@ -1,3 +1,4 @@
+// src/pages/Dashboard.tsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
@@ -43,7 +44,7 @@ const Dashboard = () => {
     }
   }, [token, user, navigate]);
 
-  const safeApiGet = async (url: string, config = {}) => {
+  const safeApiGet = async (url: string, config: any = {}) => {
     if (!token) return null;
     try {
       const res = await api.get(url, config);
@@ -63,6 +64,7 @@ const Dashboard = () => {
 
     try {
       await api.post(`/favorites/${pcroomId}`);
+      // 추가 후 현재 선택된 seatType 기준으로 재조회
       fetchFavorites();
     } catch (err) {
       console.error(err);
@@ -88,19 +90,31 @@ const Dashboard = () => {
     else setPcrooms([]);
   };
 
+  /**
+   * fetchFavorites
+   * - 변경: 새로운 API 규격에 맞춰 partySize 쿼리 파라미터를 전달
+   * - 응답이 간단한 배열([{ pcroomId, nameOfPcroom }, ...])일 수 있으므로,
+   *   기존 가동률 호출을 유지해 추가 정보를 채웁니다.
+   */
   const fetchFavorites = async () => {
     setLoading(true);
-    const data = await safeApiGet("/favorites");
+    // partySize를 숫자로 전달
+    const partySize = Number(seatType) || 1;
+    const data = await safeApiGet("/favorites", { params: { partySize } });
+
     if (Array.isArray(data)) {
+      // data가 [{pcroomId, nameOfPcroom}, ...] 형식으로 올 것을 예상
       const favoritesWithUtil = await Promise.all(
-        data.map(async (fav: Favorite) => {
+        data.map(async (fav: any) => {
+          // 기존과 동일하게 상세 가동률을 따로 조회
           const utilRes = await safeApiGet(`/pcrooms/${fav.pcroomId}/utilization`);
           return {
-            ...fav,
+            pcroomId: fav.pcroomId,
+            nameOfPcroom: fav.nameOfPcroom ?? fav.pcroomName ?? "이름 없음",
             utilization: utilRes?.utilization ?? 0,
             seatCount: utilRes?.seatCount ?? 0,
             usedSeatCount: utilRes?.usedSeatCount ?? 0,
-          };
+          } as Favorite;
         })
       );
       setFavorites(favoritesWithUtil.sort((a, b) => b.pcroomId - a.pcroomId));
@@ -110,12 +124,20 @@ const Dashboard = () => {
     setLoading(false);
   };
 
+  // 초기 로드: pcrooms + favorites (현재 seatType 기준)
   useEffect(() => {
     if (token) {
       fetchPcrooms();
       fetchFavorites();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
+
+  // seatType이 바뀌면 favorites 재조회
+  useEffect(() => {
+    if (token) fetchFavorites();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seatType]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
@@ -133,56 +155,70 @@ const Dashboard = () => {
               </div>
 
               {/* 좌석 유형 선택 */}
-              <div className="relative inline-block">
-                {/* 버튼 */}
-                <button
-                  className="flex items-center justify-between gap-2 rounded-full bg-zinc-300/100 dark:bg-zinc-800 py-1.5 pl-3 pr-2 text-sm shadow-sm transition-colors duration-150 hover:bg-zinc-400/100 dark:hover:bg-zinc-700"
-                  onClick={() => setSeatDropdownOpen(!seatDropdownOpen)}
-                >
-                  <span className="font-medium text-zinc-900 dark:text-white transition-colors duration-150">
-                    사용할 인원 수 : {seatType}
-                  </span>
-                  <span className="material-symbols-outlined text-base text-zinc-500 dark:text-zinc-400 transition-colors duration-150">
-                    expand_more
-                  </span>
-                </button>
+<div className="relative inline-block">
+  {/* 버튼 */}
+  <button
+    className="flex items-center justify-between gap-2 rounded-full bg-zinc-300/100 dark:bg-zinc-800 py-1.5 pl-3 pr-2 text-sm shadow-sm transition-colors duration-150 hover:bg-zinc-400/100 dark:hover:bg-zinc-700"
+    onClick={() => setSeatDropdownOpen(!seatDropdownOpen)}
+  >
+    <span className="font-medium text-zinc-900 dark:text-white">
+      사용할 인원 수 : {seatType}
+    </span>
+    <span className="material-symbols-outlined text-base text-zinc-500 dark:text-zinc-400">
+      expand_more
+    </span>
+  </button>
 
-                {/* 드롭다운 */}
-                {seatDropdownOpen && (
-                  <div className="absolute top-full z-10 mt-2 w-48 origin-top-left overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white/100 dark:bg-zinc-900 shadow-xl transition-colors duration-150">
-                    <ul className="flex flex-col text-sm">
-                      {["1", "2", "3", "4", "5"].map((type) => (
-                        <li key={type}>
-                          <a
-                            className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors duration-150 ${seatType === type
-                              ? "bg-primary/20 text-primary dark:text-primary"
-                              : "text-zinc-900 dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700"
-                              }`}
-                            onClick={() => {
-                              setSeatType(type);
-                              setSeatDropdownOpen(false);
-                            }}
-                          >
-                            <span className="material-symbols-outlined text-lg">
-                              {type === "2"
-                                ? "chair"
-                                : type === "3"
-                                  ? "people"
-                                  : "stadia_controller"}
-                            </span>
-                            <span>{type}</span>
-                            {seatType === type && (
-                              <span className="material-symbols-outlined ml-auto text-lg text-primary">
-                                check
-                              </span>
-                            )}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
+  {/* 드롭다운 */}
+  {seatDropdownOpen && (
+    <div
+      className="
+        absolute left-0 top-full mt-2 w-48 
+        rounded-lg border border-zinc-200 dark:border-zinc-700
+        bg-white dark:bg-zinc-900 shadow-xl z-50
+        overflow-hidden
+      "
+    >
+      <ul
+        className="
+          flex flex-col text-sm 
+          max-h-48 overflow-y-auto
+        "
+      >
+        {["1","2","3","4","5","6","7","8","9","10"].map((type) => (
+          <li key={type}>
+            <a
+              className={`
+                flex items-center gap-3 p-3 cursor-pointer 
+                transition-colors duration-150
+                ${seatType === type
+                  ? "bg-primary/20 text-primary"
+                  : "text-zinc-900 dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700"
+                }
+              `}
+              onClick={() => {
+                setSeatType(type);
+                setSeatDropdownOpen(false);
+              }}
+            >
+              <span className="material-symbols-outlined text-lg">
+                {type === "2" ? "chair" : type === "3" ? "people" : "stadia_controller"}
+              </span>
+              <span>{type}</span>
+
+              {seatType === type && (
+                <span className="material-symbols-outlined ml-auto text-lg text-primary">
+                  check
+                </span>
+              )}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )}
+</div>
+
 
             </CardHeader>
 

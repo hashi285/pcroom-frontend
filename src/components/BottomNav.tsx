@@ -19,7 +19,7 @@ export const BottomNav = () => {
   // role 매핑: USER/ADMIN (UserProvider에서 가져오는 값에 맞춰 조정)
   const isAdmin = user?.role === "ADMIN";
 
-  const homePath = isAdmin ? "/manager-dashboard" : "/dashboard";
+  const homePath = "/dashboard";
 
   const items: NavItem[] = [
     { id: "home", to: homePath, label: "홈", icon: <Home size={20} />, show: true },
@@ -27,7 +27,7 @@ export const BottomNav = () => {
     { id: "notices", to: "/notices", label: "공지사항", icon: <Mail size={20} />, show: true },
     { id: "settings", to: "/settings", label: "내정보", icon: <User size={20} />, show: true },
     // 관리자 전용 설정
-    { id: "admin", to: "/admin/settings", label: "설정", icon: <Settings size={20} />, show: isAdmin },
+    { id: "admin", to: "/manager-dashboard", label: "설정", icon: <Settings size={20} />, show: isAdmin },
   ];
 
   return (
