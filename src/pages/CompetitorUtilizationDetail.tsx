@@ -13,7 +13,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Navigation } from "@/components/Navigation";
 import { BottomNav } from "@/components/BottomNav";
 
-
 interface UtilizationRecord {
   pcroomId: number;
   utilization: number;
@@ -28,7 +27,6 @@ const CompetitorUtilizationDetail = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // URLSearchParams로 pcroomId 가져오기 (선택적)
   const searchParams = new URLSearchParams(location.search);
   const pcroomId = searchParams.get("pcroomId");
 
@@ -88,7 +86,6 @@ const CompetitorUtilizationDetail = () => {
               <div className="py-10 text-center">Loading...</div>
             ) : (
               <>
-                {/* 주요 수치 */}
                 <div className="mb-6">
                   <p className="text-lg font-medium">
                     {last?.nameOfPcroom} 현재 가동률: {last?.utilization.toFixed(2)}%
@@ -98,7 +95,6 @@ const CompetitorUtilizationDetail = () => {
                   </p>
                 </div>
 
-                {/* 그래프 (기존처럼 단일 색상, 시간만 표시) */}
                 <div className="w-full h-72 mb-4">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={formattedData}>
@@ -111,13 +107,12 @@ const CompetitorUtilizationDetail = () => {
 
                       <XAxis dataKey="time" tick={{ fontSize: 12 }} />
                       <YAxis domain={[0, 100]} />
-                      <Tooltip />
+                      <Tooltip formatter={(value: any) => [`${value.toFixed(2)}%`, "가동률"]} />
                       <Area type="monotone" dataKey="utilization" stroke="#4F46E5" fill="url(#colorUv)" strokeWidth={3} />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
 
-                {/* 상세 리스트 접기/펼치기 */}
                 <button
                   className="mb-2 text-sm underline"
                   onClick={() => setExpanded(!expanded)}
