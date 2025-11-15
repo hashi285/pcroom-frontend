@@ -1,6 +1,6 @@
 // src/components/BottomNav.tsx
 import { Link, useLocation } from "react-router-dom";
-import { Home, Search, Bell, User, Banana } from "lucide-react";
+import { Home, Search, Bell, User, LayoutDashboard } from "lucide-react";
 import { useUser } from "@/context/UserProvider";
 import cn from "classnames";
 
@@ -16,8 +16,14 @@ export const BottomNav = () => {
   const { user } = useUser();
   const location = useLocation();
 
-  // role 매핑: USER/ADMIN (UserProvider에서 가져오는 값에 맞춰 조정)
+  // 로딩 판정: user 데이터가 아직 안 들어오면 true
+  const loading = user === undefined || user === null;
+
+  // role 매핑
   const isAdmin = user?.role === "ADMIN";
+
+  // 로딩 중이면 관리자 버튼 표시 X
+  const showAdmin = loading ? false : isAdmin;
 
   const homePath = "/dashboard";
 
@@ -25,9 +31,8 @@ export const BottomNav = () => {
     { id: "home", to: homePath, label: "홈", icon: <Home size={20} />, show: true },
     { id: "search", to: "/search", label: "검색", icon: <Search size={20} />, show: true },
     { id: "notices", to: "/notices", label: "공지사항", icon: <Bell size={20} />, show: true },
-    { id: "admin", to: "/manager-dashboard", label: "설정", icon: <Banana size={20} />, show: isAdmin },
+    { id: "admin", to: "/manager-dashboard", label: "사장님", icon: <LayoutDashboard size={20} />, show: showAdmin },
     { id: "settings", to: "/settings", label: "내정보", icon: <User size={20} />, show: true },
-    // 관리자 전용 설정
   ];
 
   return (
