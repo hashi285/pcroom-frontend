@@ -84,27 +84,12 @@ const UserSettings = () => {
                     {/* Header */}
                     <div>
                         <h1 className="text-4xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent">
-                            사용자 설정
+                            내 정보
                         </h1>
-                        <p className="text-muted-foreground">계정, 프로필, 보안 정보를 관리할 수 있습니다.</p>
+                    
                     </div>
 
-                    {/* 프로필 관리 */}
-                    <Card className="shadow-subtle hover:shadow-elegant transition-all duration-300">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <User className="w-5 h-5 text-primary" />
-                                프로필 관리
-                            </CardTitle>
-                            <CardDescription>닉네임을 수정할 수 있습니다.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
 
-                            <Button className="h-11 px-5 text-sm font-semibold bg-gradient-primary shadow-elegant hover:opacity-90 transition-all"
-                                size="sm"
-                                onClick={handleSaveProfile}>수정</Button>
-                        </CardContent>
-                    </Card>
 
                     {/* 보안 설정 */}
                     <Card className="shadow-subtle hover:shadow-elegant transition-all duration-300">
@@ -121,7 +106,7 @@ const UserSettings = () => {
                             <p>마지막 로그인: 2025-11-10 16:30</p>
                             <p>세션 만료까지 남은 시간: 23분</p>
                             <Button variant="destructive" className="mt-2 flex items-center gap-2" onClick={handleLogoutAll}>
-                                <LogOut className="w-4 h-4" /> 모든 기기 로그아웃
+                                <LogOut className="w-4 h-4" /> 로그아웃
                             </Button>
                         </CardContent>
                     </Card>
