@@ -19,6 +19,7 @@ import Notices from "./pages/Notices";
 import PcroomDetail from "./pages/PcroomDetail";
 import UserSettings from "./pages/UserSettings";
 import NoticeDetailPage from "@/pages/NoticeDetailPage";
+import CompetitorUtilizationDetail from "@/pages/CompetitorUtilizationDetail";
 
 const queryClient = new QueryClient();
 
@@ -104,6 +105,11 @@ const App = () => (
               path="/notice/:noticeId"
               element={<NoticeDetailPage />
               }
+            />
+
+            <Route
+              path="/manager-dashboard/utilization/:pcroomId"
+              element={<CompetitorUtilizationDetail />}
             />
 
             {/* Catch-all 404 */}

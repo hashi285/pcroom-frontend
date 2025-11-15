@@ -199,13 +199,15 @@ const ManagerDashboard = () => {
                       {pcs.map(pc => (
                         <div
                           key={`${pc.pcroomId}-${pc.recordedAt}`}
-                          className="p-3 border border-border rounded-lg shadow-sm hover:shadow-md transition-all"
+                          className="p-3 border border-border rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer"
+                          onClick={() => navigate(`/manager-dashboard/utilization/${pc.pcroomId}`)}
                         >
                           <p className="font-medium">{pc.nameOfPcroom || pc.pcroomName}</p>
                           <span className="text-sm text-muted-foreground">
                             {(pc.utilization ?? 0).toFixed(2)}%
                           </span>
                         </div>
+
                       ))}
                     </div>
                   </div>
