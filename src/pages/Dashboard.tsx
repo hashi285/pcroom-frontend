@@ -83,6 +83,17 @@ const Dashboard = () => {
     setLoading(false);
   };
 
+  // 인원 수 → 아이콘 매핑 함수
+const getSeatIcon = (type: string) => {
+  const count = Number(type);
+
+  if (count === 1) return "person";
+  if (count === 2) return "person_2";
+  if (count === 3) return "group";
+  return "groups"; // 4~10명
+};
+
+
   const fetchPcrooms = async () => {
     const data = await safeApiGet("/pcrooms");
     if (Array.isArray(data)) setPcrooms(data);
@@ -155,69 +166,72 @@ const Dashboard = () => {
               </div>
 
               {/* 좌석 유형 선택 */}
-<div className="relative inline-block">
-  {/* 버튼 */}
-  <button
-    className="flex items-center justify-between gap-2 rounded-full bg-zinc-300/100 dark:bg-zinc-800 py-1.5 pl-3 pr-2 text-sm shadow-sm transition-colors duration-150 hover:bg-zinc-400/100 dark:hover:bg-zinc-700"
-    onClick={() => setSeatDropdownOpen(!seatDropdownOpen)}
-  >
-    <span className="font-medium text-zinc-900 dark:text-white">
-      사용할 인원 수 : {seatType}
-    </span>
-    <span className="material-symbols-outlined text-base text-zinc-500 dark:text-zinc-400">
-      expand_more
-    </span>
-  </button>
+              <div className="relative inline-block">
+                {/* 버튼 */}
+                <button
+                  className="flex items-center justify-between gap-2 rounded-full bg-zinc-300/100 dark:bg-zinc-800 py-1.5 pl-3 pr-2 text-sm shadow-sm transition-colors duration-150 hover:bg-zinc-400/100 dark:hover:bg-zinc-700"
+                  onClick={() => setSeatDropdownOpen(!seatDropdownOpen)}
+                >
+                  <span className="font-medium text-zinc-900 dark:text-white">
+                    사용할 인원 수 : {seatType}
+                  </span>
+                  <span className="material-symbols-outlined text-base text-zinc-500 dark:text-zinc-400">
+                    expand_more
+                  </span>
+                </button>
 
-  {/* 드롭다운 */}
-  {seatDropdownOpen && (
-    <div
-      className="
+                {/* 드롭다운 */}
+                {seatDropdownOpen && (
+                  <div
+                    className="
         absolute left-0 top-full mt-2 w-48 
         rounded-lg border border-zinc-200 dark:border-zinc-700
         bg-white dark:bg-zinc-900 shadow-xl z-50
         overflow-hidden
       "
-    >
-      <ul
-        className="
-          flex flex-col text-sm 
-          max-h-48 overflow-y-auto
-        "
+                  >
+                    <ul
+  className="
+    flex flex-col text-sm 
+    max-h-48 overflow-y-auto
+  "
+>
+  {["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"].map((type) => (
+    <li key={type}>
+      <a
+        className={`
+          flex items-center gap-3 p-3 cursor-pointer 
+          transition-colors duration-150
+          ${
+            seatType === type
+              ? "bg-primary/20 text-primary"
+              : "text-zinc-900 dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700"
+          }
+        `}
+        onClick={() => {
+          setSeatType(type);
+          setSeatDropdownOpen(false);
+        }}
       >
-        {["1","2","3","4","5","6","7","8","9","10"].map((type) => (
-          <li key={type}>
-            <a
-              className={`
-                flex items-center gap-3 p-3 cursor-pointer 
-                transition-colors duration-150
-                ${seatType === type
-                  ? "bg-primary/20 text-primary"
-                  : "text-zinc-900 dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700"
-                }
-              `}
-              onClick={() => {
-                setSeatType(type);
-                setSeatDropdownOpen(false);
-              }}
-            >
-              <span className="material-symbols-outlined text-lg">
-                {type === "2" ? "chair" : type === "3" ? "people" : "stadia_controller"}
-              </span>
-              <span>{type}</span>
+        <span className="material-symbols-outlined text-lg">
+          {getSeatIcon(type)}
+        </span>
 
-              {seatType === type && (
-                <span className="material-symbols-outlined ml-auto text-lg text-primary">
-                  check
-                </span>
-              )}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </div>
-  )}
-</div>
+        <span>{type}</span>
+
+        {seatType === type && (
+          <span className="material-symbols-outlined ml-auto text-lg text-primary">
+            check
+          </span>
+        )}
+      </a>
+    </li>
+  ))}
+</ul>
+
+                  </div>
+                )}
+              </div>
 
 
             </CardHeader>
