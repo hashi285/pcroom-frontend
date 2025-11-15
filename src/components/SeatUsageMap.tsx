@@ -63,10 +63,33 @@ const SeatUsageMap = ({ pcroomId }: SeatUsageMapProps) => {
   const maxY = seats.length ? Math.max(...seats.map((s) => s.top)) + seatSize : 0;
 
   // 좌석 가동률 색상 단계 (다크 모드 포함)
+    // === 2-Color Diverging Gradient (Gray → Indigo → Deep Indigo) ===
   const getSeatColor = (percent: number) => {
-    const opacity = Math.min(Math.max(percent / 100, 0.1), 1); // 0.1~1 사이
-    return `rgba(79, 70, 229, ${opacity})`; // #4F46E5
+    const t = percent / 100;
+
+    const start = [229, 231, 235]; // gray-200 #e5e7eb
+    const mid = [129, 140, 248];  // indigo-400 #818cf8
+    const end = [79, 70, 229];    // indigo-600 #4f46e5
+
+    let r, g, b;
+
+    if (t <= 0.5) {
+      // 0% → 50% (gray → indigo-400)
+      const k = t / 0.5;
+      r = start[0] + (mid[0] - start[0]) * k;
+      g = start[1] + (mid[1] - start[1]) * k;
+      b = start[2] + (mid[2] - start[2]) * k;
+    } else {
+      // 50% → 100% (indigo-400 → indigo-600)
+      const k = (t - 0.5) / 0.5;
+      r = mid[0] + (end[0] - mid[0]) * k;
+      g = mid[1] + (end[1] - mid[1]) * k;
+      b = mid[2] + (end[2] - mid[2]) * k;
+    }
+
+    return `rgb(${r}, ${g}, ${b})`;
   };
+
 
   return (
     <Card className="shadow-subtle bg-card">
