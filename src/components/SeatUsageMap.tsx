@@ -25,19 +25,33 @@ interface SeatUsageMapProps {
 }
 
 const SeatUsageMap = ({ pcroomId }: SeatUsageMapProps) => {
+  // === 변경된 날짜 기본값 ===
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+  const yesterdayStr = yesterday.toISOString().split("T")[0];
+  const weekAgo = new Date();
+  weekAgo.setDate(today.getDate() - 7);
+  const weekAgoStr = weekAgo.toISOString().split("T")[0];
+
   const [seats, setSeats] = useState<Seat[]>([]);
   const [loading, setLoading] = useState(true);
-  const [startDate, setStartDate] = useState<string>(new Date().toISOString().split("T")[0]);
-  const [endDate, setEndDate] = useState<string>(new Date().toISOString().split("T")[0]);
+
+  // 기본값: 어제 ~ 어제
+  const [startDate, setStartDate] = useState<string>(weekAgoStr);
+  const [endDate, setEndDate] = useState<string>(yesterdayStr);
 
   const seatSize = 40;
 
   const fetchSeatUsage = async () => {
     setLoading(true);
     try {
-      const res = await api.get<SeatUsage[]>(`/pcroom/seat-usage-daily/${pcroomId}/range-with-info`, {
-        params: { startDate, endDate },
-      });
+      const res = await api.get<SeatUsage[]>(
+        `/pcroom/seat-usage-daily/${pcroomId}/range-with-info`,
+        {
+          params: { startDate, endDate },
+        }
+      );
 
       const formattedSeats: Seat[] = res.data.map((s) => ({
         id: s.seatNum,
@@ -62,25 +76,21 @@ const SeatUsageMap = ({ pcroomId }: SeatUsageMapProps) => {
   const maxX = seats.length ? Math.max(...seats.map((s) => s.left)) + seatSize : 0;
   const maxY = seats.length ? Math.max(...seats.map((s) => s.top)) + seatSize : 0;
 
-  // 좌석 가동률 색상 단계 (다크 모드 포함)
-    // === 2-Color Diverging Gradient (Gray → Indigo → Deep Indigo) ===
   const getSeatColor = (percent: number) => {
     const t = percent / 100;
 
-    const start = [229, 231, 235]; // gray-200 #e5e7eb
-    const mid = [129, 140, 248];  // indigo-400 #818cf8
-    const end = [79, 70, 229];    // indigo-600 #4f46e5
+    const start = [229, 231, 235];
+    const mid = [129, 140, 248];
+    const end = [79, 70, 229];
 
     let r, g, b;
 
     if (t <= 0.5) {
-      // 0% → 50% (gray → indigo-400)
       const k = t / 0.5;
       r = start[0] + (mid[0] - start[0]) * k;
       g = start[1] + (mid[1] - start[1]) * k;
       b = start[2] + (mid[2] - start[2]) * k;
     } else {
-      // 50% → 100% (indigo-400 → indigo-600)
       const k = (t - 0.5) / 0.5;
       r = mid[0] + (end[0] - mid[0]) * k;
       g = mid[1] + (end[1] - mid[1]) * k;
@@ -90,13 +100,13 @@ const SeatUsageMap = ({ pcroomId }: SeatUsageMapProps) => {
     return `rgb(${r}, ${g}, ${b})`;
   };
 
-
   return (
     <Card className="shadow-subtle bg-card">
       <CardHeader className="pb-3 border-b flex flex-col md:flex-row md:items-center md:justify-between gap-2 border-zinc-200 dark:border-zinc-800">
-        <CardTitle className="text-base font-semibold text-zinc-700 dark:text-zinc-300">좌석별 가동률</CardTitle>
+        <CardTitle className="text-base font-semibold text-zinc-700 dark:text-zinc-300">
+          좌석별 가동률
+        </CardTitle>
 
-        {/* 날짜 선택 */}
         <div className="flex gap-2 items-center">
           <label>
             시작일:
@@ -116,17 +126,11 @@ const SeatUsageMap = ({ pcroomId }: SeatUsageMapProps) => {
               className="ml-1 border rounded px-1 py-0.5 text-sm dark:bg-zinc-800 dark:border-zinc-600 dark:text-white"
             />
           </label>
-          <button
-            className="ml-2 px-2 py-1 bg-primary text-white rounded text-sm"
-            onClick={fetchSeatUsage}
-          >
-            조회
-          </button>
+
         </div>
       </CardHeader>
 
-      <CardContent className="relative w-full h-[60vh] flex flex-col items-center justify-start">
-        {/* 범례: 그라데이션 가로 바 */}
+      <CardContent className="relative w-full h-[100vh] flex flex-col items-center justify-start">
         <div className="w-full max-w-md h-4 mb-3 rounded overflow-hidden border border-zinc-300 dark:border-zinc-600">
           <div
             className="h-full w-full"
@@ -146,10 +150,18 @@ const SeatUsageMap = ({ pcroomId }: SeatUsageMapProps) => {
         {loading ? (
           <div className="text-sm text-muted-foreground">좌석 정보를 불러오는 중입니다...</div>
         ) : seats.length === 0 ? (
-          <div className="text-sm text-center text-muted-foreground">선택한 날짜에 좌석 사용률 데이터가 없습니다.</div>
+          <div className="text-sm text-center text-muted-foreground">
+            선택한 날짜에 좌석 사용률 데이터가 없습니다.
+          </div>
         ) : (
-          <div className="relative overflow-auto rounded-lg border bg-zinc-50 dark:bg-zinc-900" style={{ width: "100%", height: "100%" }}>
-            <div className="relative mx-auto my-auto origin-top-left" style={{ width: `${maxX}px`, height: `${maxY}px` }}>
+          <div
+            className="relative overflow-auto rounded-lg border bg-zinc-50 dark:bg-zinc-900"
+            style={{ width: "100%", height: "100%" }}
+          >
+            <div
+              className="relative mx-auto my-auto origin-top-left"
+              style={{ width: `${maxX}px`, height: `${maxY}px` }}
+            >
               {seats.map((seat) => (
                 <div
                   key={seat.id}
