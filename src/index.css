@@ -111,6 +111,7 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Ria', sans-serif;
   }
 }
 
@@ -120,5 +121,3 @@ All colors MUST be HSL.
     font-weight: normal;
     font-display: swap;
 }
-
-

@@ -59,16 +59,16 @@ const Auth = () => {
       <Card className="w-full max-w-md shadow-elegant">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            {isLogin ? "Welcome Back" : "Get Started"}
+            피방자리
           </CardTitle>
           <CardDescription>
-            {isLogin ? "Sign in to access your membership" : "Create your account to get started"}
+            로그인 또는 회원가입하여 시작하세요.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleAuth} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">이메일</Label>
               <Input
                 id="email"
                 type="email"
@@ -80,7 +80,7 @@ const Auth = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">비밀번호</Label>
               <Input
                 id="password"
                 type="password"
@@ -93,7 +93,7 @@ const Auth = () => {
 
             {!isLogin && (
               <div className="space-y-2">
-                <Label htmlFor="nickname">Nickname</Label>
+                <Label htmlFor="nickname">닉네임</Label>
                 <Input
                   id="nickname"
                   type="text"
@@ -106,13 +106,13 @@ const Auth = () => {
             )}
 
             <Button type="submit" className="w-full bg-gradient-primary shadow-elegant" disabled={loading}>
-              {loading ? "Loading..." : isLogin ? "Sign In" : "Sign Up"}
+              {loading ? "Loading..." : isLogin ? "로그인" : "회원가입"}
             </Button>
           </form>
 
           <div className="mt-4 text-center text-sm">
             <button type="button" onClick={() => setIsLogin(!isLogin)} className="text-primary hover:underline">
-              {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
+              {isLogin ? "계정이 없으신가요? 회원가입 하세요!" : "계정으로 로그인하세요!"}
             </button>
           </div>
         </CardContent>
