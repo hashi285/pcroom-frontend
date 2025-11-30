@@ -62,7 +62,7 @@ const Auth = () => {
             피방자리
           </CardTitle>
           <CardDescription>
-            로그인 또는 회원가입하여 시작하세요.
+            로그인 또는 회원가입하여 시작하세요
           </CardDescription>
         </CardHeader>
         <CardContent>
