@@ -8,6 +8,7 @@ interface SeatInfo {
   seatsNum: number;
   x: number;
   y: number;
+  seatType: "NORMAL" | "COUPLE" | "TEAM";
 }
 
 interface SeatStatus {
@@ -15,42 +16,72 @@ interface SeatStatus {
   result: boolean;
 }
 
-interface Seat {
-  id: number;
+interface Structure {
+  type: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+interface CanvasElement {
+  id: string;
+  type: string;
   top: number;
   left: number;
-  status: "occupied" | "available";
+  width: number;
+  height: number;
+  status?: "occupied" | "available";
+  label?: string;
+  seatType?: "NORMAL" | "COUPLE" | "TEAM";
 }
 
 const PcroomSeatMap = ({ pcroomId }: { pcroomId: number }) => {
-  const [seats, setSeats] = useState<Seat[]>([]);
+  const [elements, setElements] = useState<CanvasElement[]>([]);
   const [loading, setLoading] = useState(true);
   const [scale, setScale] = useState(1);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  const seatSize = 40;
   const MIN_SCALE = 0.5;
   const MAX_SCALE = 3;
-
   const lastDistanceRef = useRef<number | null>(null);
 
   const loadSeatData = async () => {
     try {
-      const seatRes = await api.get<SeatInfo[]>(`/pcrooms/seatInfo/${pcroomId}`);
-      const statusRes = await api.get<SeatStatus[]>(`/pcrooms/${pcroomId}/seat`);
+      const [seatRes, statusRes, structRes] = await Promise.all([
+        api.get<SeatInfo[]>(`/pcrooms/seatInfo/${pcroomId}`),
+        api.get<SeatStatus[]>(`/pcrooms/${pcroomId}/seat`),
+        api.get<Structure[]>(`/pcrooms/${pcroomId}/structures`),
+      ]);
+
       const statusMap = new Map<number, boolean>();
       statusRes.data.forEach((s) => statusMap.set(s.seatsNum, s.result));
 
-      const formattedSeats: Seat[] = seatRes.data.map((seat) => ({
-        id: seat.seatsNum,
-        top: seat.y * seatSize,
-        left: seat.x * seatSize,
+      const formattedSeats: CanvasElement[] = seatRes.data.map((seat) => ({
+        id: `seat-${seat.seatsNum}`,
+        type: "SEAT",
+        top: seat.y,
+        left: seat.x,
+        width: 50,
+        height: 50,
         status: statusMap.get(seat.seatsNum) ? "occupied" : "available",
+        label: seat.seatType === "COUPLE" ? "커플석" : (seat.seatType === "TEAM" ? "팀좌석" : String(seat.seatsNum)),
+        seatType: seat.seatType,
       }));
 
-      setSeats(formattedSeats);
+      const formattedStructures: CanvasElement[] = structRes.data.map((s, i) => ({
+        id: `struct-${i}`,
+        type: s.type,
+        top: s.y,
+        left: s.x,
+        width: s.width,
+        height: s.height,
+        label: s.type,
+      }));
+
+      setElements([...formattedSeats, ...formattedStructures]);
     } catch (error) {
-      console.error("좌석 정보를 불러오지 못했습니다.", error);
+      console.error("도면 정보를 불러오지 못했습니다.", error);
     } finally {
       setLoading(false);
     }
@@ -75,7 +106,7 @@ const PcroomSeatMap = ({ pcroomId }: { pcroomId: number }) => {
 
     const handleTouchMove = (e: TouchEvent) => {
       if (e.touches.length === 2 && lastDistanceRef.current != null) {
-        e.preventDefault(); // 필수: 브라우저 기본 줌 막기
+        e.preventDefault();
         const dx = e.touches[0].clientX - e.touches[1].clientX;
         const dy = e.touches[0].clientY - e.touches[1].clientY;
         const distance = Math.sqrt(dx * dx + dy * dy);
@@ -106,20 +137,33 @@ const PcroomSeatMap = ({ pcroomId }: { pcroomId: number }) => {
     };
   }, []);
 
-  const maxX = seats.length ? Math.max(...seats.map((s) => s.left)) + seatSize : 0;
-  const maxY = seats.length ? Math.max(...seats.map((s) => s.top)) + seatSize : 0;
+  const maxX = elements.length ? Math.max(...elements.map((s) => s.left + s.width)) + 100 : 800;
+  const maxY = elements.length ? Math.max(...elements.map((s) => s.top + s.height)) + 100 : 600;
+
+  const getElementColor = (type: string, status?: string, seatType?: string) => {
+    if (type === "SEAT") {
+      return status === "occupied" ? "bg-blue-500 text-white border border-blue-600/50" : "bg-zinc-400 text-white border border-zinc-500/50";
+    }
+    switch (type) {
+      case "WALL": return "bg-zinc-700 text-white border-2 border-zinc-900";
+      case "TOILET": return "bg-cyan-500 text-white";
+      case "COUNTER": return "bg-amber-500 text-white";
+      case "SMOKING_ROOM": return "bg-red-400 text-white";
+      default: return "bg-zinc-400 text-white";
+    }
+  };
 
   return (
     <Card className="relative w-full h-[80vh] max-w-6xl mx-auto p-4 bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 shadow-md">
       <CardHeader className="pb-3 border-b border-zinc-200 dark:border-zinc-800">
         <CardTitle className="text-base font-semibold text-zinc-700 dark:text-zinc-300">
-          좌석 배치도
+          좌석 배치도 (자유 배치)
         </CardTitle>
       </CardHeader>
 
       <CardContent className="relative w-full h-[calc(80vh-80px)] flex items-center justify-center">
         {loading ? (
-          <div className="text-sm text-muted-foreground">좌석 정보를 불러오는 중입니다...</div>
+          <div className="text-sm text-muted-foreground">도면 정보를 불러오는 중입니다...</div>
         ) : (
           <div
             ref={containerRef}
@@ -134,21 +178,18 @@ const PcroomSeatMap = ({ pcroomId }: { pcroomId: number }) => {
                 transform: `scale(${scale})`,
               }}
             >
-              {seats.map((seat) => (
+              {elements.map((el) => (
                 <div
-                  key={seat.id}
-                  className={`absolute flex items-center justify-center text-xs font-bold rounded-md shadow-sm transition-colors duration-150 ${seat.status === "occupied"
-                    ? "bg-blue-500 text-white"
-                    : "bg-zinc-400 text-white"
-                    }`}
+                  key={el.id}
+                  className={`absolute flex items-center justify-center text-xs font-bold rounded-md transition-colors duration-150 ${getElementColor(el.type, el.status, el.seatType)}`}
                   style={{
-                    top: `${seat.top}px`,
-                    left: `${seat.left}px`,
-                    width: `${seatSize - 4}px`,
-                    height: `${seatSize - 4}px`,
+                    top: `${el.top}px`,
+                    left: `${el.left}px`,
+                    width: `${el.width}px`,
+                    height: `${el.height}px`,
                   }}
                 >
-                  {seat.id}
+                  {el.label}
                 </div>
               ))}
             </div>
