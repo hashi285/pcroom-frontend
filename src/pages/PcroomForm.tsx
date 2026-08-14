@@ -52,15 +52,15 @@ const PcroomForm = () => {
     }));
   };
 
-  const addElement = (type: CanvasElement["type"], seatType?: CanvasElement["seatType"]) => {
+  const addElement = (type: CanvasElement["type"], seatType?: CanvasElement["seatType"], customWidth?: number, customHeight?: number) => {
     const el: CanvasElement = {
       id: Math.random().toString(36).substr(2, 9),
       type,
       seatType,
       x: 100,
       y: 100,
-      width: type === "SEAT" ? 50 : 100,
-      height: type === "SEAT" ? 50 : 100,
+      width: customWidth || (type === "SEAT" ? 50 : 100),
+      height: customHeight || (type === "SEAT" ? 50 : 100),
     };
     if (type === "SEAT") {
       el.seatNum = nextSeatNum;
@@ -89,6 +89,50 @@ const PcroomForm = () => {
       setForm((prev) => ({ ...prev, seatCount: prev.seatCount - 1 }));
     }
     setElements(elements.filter((el) => el.id !== id));
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      alert("AI가 도면을 분석 중입니다. 약간의 시간이 소요될 수 있습니다.");
+
+      const res = await api.post("/pcrooms/auto-layout", formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+
+      const aiElements = res.data.elements;
+      if (aiElements && Array.isArray(aiElements) && aiElements.length > 0) {
+        let currentSeatNum = nextSeatNum;
+        const newElements = aiElements.map((el: any) => {
+          const newEl = {
+            ...el,
+            id: Math.random().toString(36).substr(2, 9),
+          };
+          if (el.type === "SEAT") {
+            newEl.seatNum = currentSeatNum++;
+          }
+          return newEl;
+        });
+        
+        setElements((prev) => [...prev, ...newElements]);
+        setNextSeatNum(currentSeatNum);
+        setForm((prev) => ({ 
+          ...prev, 
+          seatCount: prev.seatCount + newElements.filter((e: any) => e.type === "SEAT").length 
+        }));
+        alert(`AI 분석 완료! ${newElements.length}개의 요소가 자동 배치되었습니다.`);
+      } else {
+        alert("AI가 도면에서 좌석을 찾지 못했습니다.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("AI 분석 중 오류가 발생했습니다.");
+    }
   };
 
   const handleSubmit = async () => {
@@ -219,10 +263,24 @@ const PcroomForm = () => {
                 <Button variant="outline" onClick={() => addElement("SEAT", "NORMAL")}>💻 일반석</Button>
                 <Button variant="outline" onClick={() => addElement("SEAT", "COUPLE")}>👩‍❤️‍👨 커플석</Button>
                 <Button variant="outline" onClick={() => addElement("SEAT", "TEAM")}>👥 팀좌석</Button>
-                <Button variant="outline" onClick={() => addElement("WALL")}>🧱 벽 추가</Button>
+                <Button variant="outline" onClick={() => addElement("WALL", undefined, 200, 20)}>🧱 가로 벽</Button>
+                <Button variant="outline" onClick={() => addElement("WALL", undefined, 20, 200)}>🧱 세로 벽</Button>
                 <Button variant="outline" onClick={() => addElement("TOILET")}>🚻 화장실</Button>
                 <Button variant="outline" onClick={() => addElement("COUNTER")}>🏪 카운터</Button>
                 <Button variant="outline" className="col-span-2" onClick={() => addElement("SMOKING_ROOM")}>🚬 흡연실</Button>
+                
+                <div className="col-span-2 relative mt-4">
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={handleFileUpload} 
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    title="도면 이미지 업로드"
+                  />
+                  <Button variant="default" className="w-full bg-gradient-primary font-bold text-white pointer-events-none">
+                    📸 도면 이미지 AI 자동 배치
+                  </Button>
+                </div>
               </CardContent>
             </Card>
 

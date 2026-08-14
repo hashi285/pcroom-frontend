@@ -4,7 +4,7 @@ import { jwtDecode } from "jwt-decode"; // ← 이렇게 import
 interface JwtPayload {
   userId: number;
   sub: string;
-  role: "USER" | "ADMIN";
+  role: "USER" | "ADMIN" | "OWNER";
 }
 
 interface UserContextType {

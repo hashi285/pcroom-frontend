@@ -31,7 +31,7 @@ const ManagerDashboard = () => {
 
   useEffect(() => {
     if (!token) navigate("/auth");
-    else if (user?.role === "USER") navigate("/dashboard");
+    else if (user?.role !== "ADMIN" && user?.role !== "OWNER") navigate("/dashboard");
   }, [token, user, navigate]);
 
   const safeApiGet = async (url: string, config = {}) => {

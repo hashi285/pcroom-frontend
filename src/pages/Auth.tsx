@@ -34,7 +34,7 @@ const Auth = () => {
         // 새 토큰 저장
         localStorage.setItem("jwt", token);
 
-        if (role === "ADMIN") navigate("/manager-dashboard");
+        if (role === "ADMIN" || role === "OWNER") navigate("/manager-dashboard");
         else navigate("/dashboard");
         
       } else {

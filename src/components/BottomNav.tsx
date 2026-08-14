@@ -20,7 +20,7 @@ export const BottomNav = () => {
   const loading = user === undefined || user === null;
 
   // role 매핑
-  const isAdmin = user?.role === "ADMIN";
+  const isAdmin = user?.role === "ADMIN" || user?.role === "OWNER";
 
   // 로딩 중이면 관리자 버튼 표시 X
   const showAdmin = loading ? false : isAdmin;
