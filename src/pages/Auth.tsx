@@ -43,7 +43,7 @@ const Auth = () => {
       }
     } catch (err: unknown) {
       const error = err as { response?: { data?: string }; message?: string };
-      const errData = error.response?.data as any;
+      const errData = error.response?.data as Record<string, unknown> | string | undefined;
       const errorMessage = typeof errData === 'object' && errData !== null && errData.message 
         ? errData.message 
         : (typeof errData === 'string' ? errData : error.message || "An error occurred");
