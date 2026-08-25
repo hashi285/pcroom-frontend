@@ -45,10 +45,10 @@ const PcroomForm = () => {
   const [nextSeatNum, setNextSeatNum] = useState(1);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+    const { name, value, type } = e.target;
     setForm((prev) => ({
       ...prev,
-      [name]: Number(value) || value,
+      [name]: type === "number" ? (value === "" ? "" : Number(value)) : value,
     }));
   };
 
