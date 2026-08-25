@@ -43,9 +43,14 @@ const Auth = () => {
       }
     } catch (err: unknown) {
       const error = err as { response?: { data?: string }; message?: string };
+      const errData = error.response?.data as any;
+      const errorMessage = typeof errData === 'object' && errData !== null && errData.message 
+        ? errData.message 
+        : (typeof errData === 'string' ? errData : error.message || "An error occurred");
+        
       toast({
         title: "Error",
-        description: error.response?.data || error.message || "An error occurred",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

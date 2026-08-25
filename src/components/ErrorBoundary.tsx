@@ -36,7 +36,7 @@ export class ErrorBoundary extends Component<Props, State> {
               예기치 못한 에러가 발생하여 화면을 표시할 수 없습니다.
             </p>
             <div className="bg-muted p-4 rounded-md text-left overflow-auto text-sm max-h-32">
-              <code>{this.state.error?.message}</code>
+              <code>{typeof this.state.error?.message === 'object' ? JSON.stringify(this.state.error?.message) : String(this.state.error?.message || this.state.error)}</code>
             </div>
             <Button 
               onClick={() => window.location.reload()}
