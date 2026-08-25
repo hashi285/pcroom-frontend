@@ -162,9 +162,26 @@ const Dashboard = () => {
 
             <CardContent>
               {loading ? (
-                <div className="text-center text-muted-foreground py-4">Loading...</div>
+                <div className="grid gap-3">
+                  {[1, 2, 3].map((i) => (
+                    <Card key={i} className="p-4 border border-border animate-pulse bg-slate-50/50 rounded-lg">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 flex-1">
+                          <div className="h-10 w-10 rounded-full bg-slate-200"></div>
+                          <div className="flex-1 space-y-2">
+                            <div className="h-4 bg-slate-200 rounded w-1/2"></div>
+                            <div className="h-3 bg-slate-200 rounded w-1/4"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
               ) : favorites.length === 0 ? (
-                <div className="text-center text-muted-foreground py-4">No favorites yet</div>
+                <div className="text-center py-10 text-muted-foreground flex flex-col items-center">
+                  <span className="material-symbols-outlined text-4xl mb-2 opacity-20">sentiment_dissatisfied</span>
+                  즐겨찾기한 PC방이 없습니다.<br/>검색 탭에서 PC방을 추가해보세요!
+                </div>
               ) : (
                 <div className="grid gap-3">
                   {favorites.map((fav) => {

@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/api/axiosInstance";
+import { toast } from "sonner";
 
 export interface Pcroom {
   pcroomId: number;
@@ -38,7 +39,6 @@ export const useFavorites = (partySize: number = 1) => {
       const data = res.data;
       
       if (Array.isArray(data)) {
-        // 병렬로 가동률 상세 데이터를 조회합니다.
         const favoritesWithUtil = await Promise.all(
           data.map(async (fav: any) => {
             try {
@@ -79,7 +79,11 @@ export const useAddFavorite = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["favorites"] });
       queryClient.invalidateQueries({ queryKey: ["pcrooms"] });
+      toast.success("즐겨찾기에 추가되었습니다.");
     },
+    onError: () => {
+      toast.error("즐겨찾기 추가에 실패했습니다.");
+    }
   });
 };
 
@@ -93,7 +97,11 @@ export const useRemoveFavorite = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["favorites"] });
+      toast.success("즐겨찾기에서 제거되었습니다.");
     },
+    onError: () => {
+      toast.error("즐겨찾기 제거에 실패했습니다.");
+    }
   });
 };
 

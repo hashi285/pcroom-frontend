@@ -75,9 +75,21 @@ const PcroomSearch = () => {
                         </CardHeader>
                         <CardContent>
                             {favLoading ? (
-                                <div className="text-center text-muted-foreground">Loading...</div>
+                                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                    {[1, 2, 3].map((i) => (
+                                        <Card key={i} className="p-4 border border-border animate-pulse bg-slate-50/50">
+                                            <div className="flex items-center justify-between">
+                                                <div className="h-6 bg-slate-200 rounded w-1/2"></div>
+                                                <div className="size-10 bg-slate-200 rounded-full"></div>
+                                            </div>
+                                        </Card>
+                                    ))}
+                                </div>
                             ) : favorites.length === 0 ? (
-                                <div className="text-center text-muted-foreground">즐겨찾기한 PC방이 없습니다</div>
+                                <div className="text-center py-10 text-muted-foreground flex flex-col items-center">
+                                    <span className="material-symbols-outlined text-4xl mb-2 opacity-20">search_off</span>
+                                    즐겨찾기한 PC방이 없습니다
+                                </div>
                             ) : (
                                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                                     {favorites.map((fav) => (
@@ -144,11 +156,20 @@ const PcroomSearch = () => {
                                 </div>
 
                                 {loading ? (
-                                    <div className="text-center text-muted-foreground">Loading...</div>
-                                ) : (
                                     <div className="grid gap-3">
+                                        {[1, 2].map((i) => (
+                                            <div key={i} className="flex items-center justify-between border border-border rounded-lg p-3 animate-pulse bg-slate-50/50">
+                                                <div className="h-5 bg-slate-200 rounded w-1/3"></div>
+                                                <div className="size-9 bg-slate-200 rounded-full"></div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="grid gap-3 max-h-60 overflow-y-auto pr-1">
                                         {pcrooms.length === 0 ? (
-                                            <p className="text-muted-foreground text-center">검색 결과가 없습니다.</p>
+                                            <div className="text-center py-8 text-muted-foreground">
+                                                {search.trim() ? "검색 결과가 없습니다." : "검색어를 입력해보세요."}
+                                            </div>
                                         ) : (
                                             pcrooms.map((pcroom) => (
                                                 <div
@@ -156,12 +177,11 @@ const PcroomSearch = () => {
                                                     className="flex items-center justify-between border border-border rounded-lg p-3 hover:shadow-md transition-all"
                                                 >
                                                     <span className="font-medium">{pcroom.nameOfPcroom}</span>
-                                                    {/* 아이콘 버튼으로 변경 */}
                                                     <button
-                                                        className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white shadow-md hover:scale-105 transition-transform"
                                                         onClick={() => addFavorite(pcroom.pcroomId)}
+                                                        className="flex size-9 items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors"
                                                     >
-                                                        <Plus size={20} />
+                                                        <Plus size={18} />
                                                     </button>
                                                 </div>
                                             ))
