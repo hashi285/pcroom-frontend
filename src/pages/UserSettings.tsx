@@ -34,7 +34,7 @@ const UserSettings = () => {
             setRole(user.role ?? "알 수 없음");
         }
         setLoading(false);
-    }, [token, user]);
+    }, [token, user, navigate]);
 
     const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];

@@ -58,48 +58,48 @@ const SeatUsageMap = ({ pcroomId }: SeatUsageMapProps) => {
   const MIN_SCALE = 0.5;
   const MAX_SCALE = 3;
 
-  const fetchSeatUsage = async () => {
-    setLoading(true);
-    try {
-      const [usageRes, structRes] = await Promise.all([
-        api.get<SeatUsage[]>(
-          `/pcroom/seat-usage-daily/${pcroomId}/range-with-info`,
-          { params: { startDate, endDate } }
-        ),
-        api.get<Structure[]>(`/pcrooms/${pcroomId}/structures`)
-      ]);
-
-      const formattedSeats: CanvasElement[] = usageRes.data.map((s) => ({
-        id: `seat-${s.seatNum}`,
-        type: "SEAT",
-        top: s.y,
-        left: s.x,
-        width: 50,
-        height: 50,
-        percent: s.usedPercent,
-        label: String(s.seatNum),
-      }));
-
-      const formattedStructures: CanvasElement[] = structRes.data.map((s, i) => ({
-        id: `struct-${i}`,
-        type: s.type,
-        top: s.y,
-        left: s.x,
-        width: s.width,
-        height: s.height,
-        label: s.type,
-      }));
-
-      setElements([...formattedSeats, ...formattedStructures]);
-    } catch (err) {
-      console.error("좌석 사용률 데이터를 불러오지 못했습니다.", err);
-      setElements([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchSeatUsage = async () => {
+      setLoading(true);
+      try {
+        const [usageRes, structRes] = await Promise.all([
+          api.get<SeatUsage[]>(
+            `/pcroom/seat-usage-daily/${pcroomId}/range-with-info`,
+            { params: { startDate, endDate } }
+          ),
+          api.get<Structure[]>(`/pcrooms/${pcroomId}/structures`)
+        ]);
+
+        const formattedSeats: CanvasElement[] = usageRes.data.map((s) => ({
+          id: `seat-${s.seatNum}`,
+          type: "SEAT",
+          top: s.y,
+          left: s.x,
+          width: 50,
+          height: 50,
+          percent: s.usedPercent,
+          label: String(s.seatNum),
+        }));
+
+        const formattedStructures: CanvasElement[] = structRes.data.map((s, i) => ({
+          id: `struct-${i}`,
+          type: s.type,
+          top: s.y,
+          left: s.x,
+          width: s.width,
+          height: s.height,
+          label: s.type,
+        }));
+
+        setElements([...formattedSeats, ...formattedStructures]);
+      } catch (err) {
+        console.error("좌석 사용률 데이터를 불러오지 못했습니다.", err);
+        setElements([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (pcroomId) fetchSeatUsage();
   }, [pcroomId, startDate, endDate]);
 
@@ -150,7 +150,7 @@ const SeatUsageMap = ({ pcroomId }: SeatUsageMapProps) => {
   const getElementColor = (type: string, percent?: number, seatType?: string) => {
     if (type === "SEAT" && percent !== undefined) {
       const t = percent / 100;
-      let start = [229, 231, 235]; // 회색
+      const start = [229, 231, 235]; // 회색
       const mid = [129, 140, 248]; // 연보라
       const end = [79, 70, 229]; // 짙은보라
       

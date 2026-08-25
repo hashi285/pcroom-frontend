@@ -27,49 +27,43 @@ const Notices = () => {
   const [notices, setNotices] = useState<Notice[]>([]);
   const [loading, setLoading] = useState(true);
 
-  /** 공통 API GET */
-  const safeApiGet = async (url: string) => {
-    if (!token) return null;
-    try {
-      const res = await api.get(url);
-      return res.data;
-    } catch (err) {
-      console.error(`GET ${url} 실패`, err);
-      return null;
-    }
-  };
-
-  /** 1) 즐겨찾기 → pcroomId 가져오기 (기본값: partySize=1) */
-  const fetchFavoritePcroom = async () => {
-    const res: FavoritePcroom[] | null = await safeApiGet(`/favorites?partySize=1`);
-    if (!res || res.length === 0) return;
-
-    setPcroomId(res[0].pcroomId);
-    setPcroomName(res[0].nameOfPcroom);
-  };
-
-  /** 2) 공지사항 목록 가져오기 */
-  const fetchNotices = async (id: number) => {
-    const res: Notice[] | null = await safeApiGet(`/notices/${id}`);
-    if (res) setNotices(res);
-  };
-
-  /** 전체 로딩 플로우 */
-  const loadAll = async () => {
-    await fetchFavoritePcroom();
-  };
+  useEffect(() => {
+    const fetchFavoritePcroom = async () => {
+      if (!token) return;
+      try {
+        const res = await api.get(`/favorites?partySize=1`);
+        if (res.data && res.data.length > 0) {
+          setPcroomId(res.data[0].pcroomId);
+          setPcroomName(res.data[0].nameOfPcroom);
+        } else {
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchFavoritePcroom();
+  }, [token]);
 
   useEffect(() => {
-    loadAll();
-  }, []);
-
-  /** pcroomId가 확보되면 공지 목록 조회 시작 */
-  useEffect(() => {
-    if (pcroomId !== null) {
-      fetchNotices(pcroomId);
-      setLoading(false);
+    if (pcroomId === null || !token) {
+        if (pcroomId === null && !loading) {
+            // Already loaded but no favorite
+        }
+        return;
     }
-  }, [pcroomId]);
+    const fetchNotices = async () => {
+      try {
+        const res = await api.get(`/notices/${pcroomId}`);
+        if (Array.isArray(res.data)) setNotices(res.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchNotices();
+  }, [pcroomId, token, loading]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-6">

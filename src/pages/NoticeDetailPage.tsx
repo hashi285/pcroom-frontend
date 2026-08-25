@@ -20,29 +20,27 @@ const NoticeDetailPage = () => {
   const [notice, setNotice] = useState<NoticeDetail | null>(null);
   const [loading, setLoading] = useState(true);
 
-  /** 공통 안전 API 호출 */
-  const safeApiGet = async (url: string) => {
-    if (!token) return null;
-    try {
-      const res = await api.get(url);
-      return res.data;
-    } catch (err) {
-      console.error(`GET ${url} 실패`, err);
-      return null;
-    }
-  };
-
-  /** 공지사항 상세 조회 */
-  const fetchNoticeDetail = async () => {
-    if (!noticeId) return;
-    const res = await safeApiGet(`/notices/notice/${noticeId}`);
-    if (res) setNotice(res);
-    setLoading(false);
-  };
-
   useEffect(() => {
+    const safeApiGet = async (url: string, config = {}) => {
+      if (!token) return null;
+      try {
+        const res = await api.get(url, config);
+        return res.data;
+      } catch (err) {
+        console.error(`GET ${url} 실패`, err);
+        return null;
+      }
+    };
+
+    const fetchNoticeDetail = async () => {
+      if (!noticeId) return;
+      const res = await safeApiGet(`/notices/notice/${noticeId}`);
+      if (res) setNotice(res);
+      setLoading(false);
+    };
+
     fetchNoticeDetail();
-  }, [noticeId]);
+  }, [noticeId, token]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-6">

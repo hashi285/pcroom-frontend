@@ -46,48 +46,48 @@ const PcroomSeatMap = ({ pcroomId }: { pcroomId: number }) => {
   const MAX_SCALE = 3;
   const lastDistanceRef = useRef<number | null>(null);
 
-  const loadSeatData = async () => {
-    try {
-      const [seatRes, statusRes, structRes] = await Promise.all([
-        api.get<SeatInfo[]>(`/pcrooms/seatInfo/${pcroomId}`),
-        api.get<SeatStatus[]>(`/pcrooms/${pcroomId}/seat`),
-        api.get<Structure[]>(`/pcrooms/${pcroomId}/structures`),
-      ]);
-
-      const statusMap = new Map<number, boolean>();
-      statusRes.data.forEach((s) => statusMap.set(s.seatsNum, s.result));
-
-      const formattedSeats: CanvasElement[] = seatRes.data.map((seat) => ({
-        id: `seat-${seat.seatsNum}`,
-        type: "SEAT",
-        top: seat.y,
-        left: seat.x,
-        width: 50,
-        height: 50,
-        status: statusMap.get(seat.seatsNum) ? "occupied" : "available",
-        label: seat.seatType === "COUPLE" ? "커플석" : (seat.seatType === "TEAM" ? "팀좌석" : String(seat.seatsNum)),
-        seatType: seat.seatType,
-      }));
-
-      const formattedStructures: CanvasElement[] = structRes.data.map((s, i) => ({
-        id: `struct-${i}`,
-        type: s.type,
-        top: s.y,
-        left: s.x,
-        width: s.width,
-        height: s.height,
-        label: s.type,
-      }));
-
-      setElements([...formattedSeats, ...formattedStructures]);
-    } catch (error) {
-      console.error("도면 정보를 불러오지 못했습니다.", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const loadSeatData = async () => {
+      try {
+        const [seatRes, statusRes, structRes] = await Promise.all([
+          api.get<SeatInfo[]>(`/pcrooms/seatInfo/${pcroomId}`),
+          api.get<SeatStatus[]>(`/pcrooms/${pcroomId}/seat`),
+          api.get<Structure[]>(`/pcrooms/${pcroomId}/structures`),
+        ]);
+
+        const statusMap = new Map<number, boolean>();
+        statusRes.data.forEach((s) => statusMap.set(s.seatsNum, s.result));
+
+        const formattedSeats: CanvasElement[] = seatRes.data.map((seat) => ({
+          id: `seat-${seat.seatsNum}`,
+          type: "SEAT",
+          top: seat.y,
+          left: seat.x,
+          width: 50,
+          height: 50,
+          status: statusMap.get(seat.seatsNum) ? "occupied" : "available",
+          label: seat.seatType === "COUPLE" ? "커플석" : (seat.seatType === "TEAM" ? "팀좌석" : String(seat.seatsNum)),
+          seatType: seat.seatType,
+        }));
+
+        const formattedStructures: CanvasElement[] = structRes.data.map((s, i) => ({
+          id: `struct-${i}`,
+          type: s.type,
+          top: s.y,
+          left: s.x,
+          width: s.width,
+          height: s.height,
+          label: s.type,
+        }));
+
+        setElements([...formattedSeats, ...formattedStructures]);
+      } catch (error) {
+        console.error("도면 정보를 불러오지 못했습니다.", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (pcroomId) loadSeatData();
   }, [pcroomId]);
 

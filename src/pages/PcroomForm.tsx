@@ -108,8 +108,8 @@ const PcroomForm = () => {
       const aiElements = res.data.elements;
       if (aiElements && Array.isArray(aiElements) && aiElements.length > 0) {
         let currentSeatNum = nextSeatNum;
-        const newElements = aiElements.map((el: any) => {
-          const newEl = {
+        const newElements = aiElements.map((el: Omit<CanvasElement, 'id'>) => {
+          const newEl: CanvasElement = {
             ...el,
             id: Math.random().toString(36).substr(2, 9),
           };
@@ -123,7 +123,7 @@ const PcroomForm = () => {
         setNextSeatNum(currentSeatNum);
         setForm((prev) => ({ 
           ...prev, 
-          seatCount: prev.seatCount + newElements.filter((e: any) => e.type === "SEAT").length 
+          seatCount: prev.seatCount + newElements.filter((e: CanvasElement) => e.type === "SEAT").length 
         }));
         alert(`AI 분석 완료! ${newElements.length}개의 요소가 자동 배치되었습니다.`);
       } else {
