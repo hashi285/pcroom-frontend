@@ -1,0 +1,62 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build-and-lint:
+    name: Build and Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🔍 Run Linter
+        run: npm run lint
+
+      - name: 🏗️ Build Project
+        run: npm run build
+        env:
+          # 프로덕션 빌드 시 필요한 환경변수가 있다면 여기에 추가하세요
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+
+      # (선택) 아티팩트 업로드: 빌드된 결과물을 다운로드할 수 있게 유지합니다
+      - name: 📤 Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7
+
+  # 배포 (Deployment) Job 예시 - Vercel, AWS S3, GitHub Pages 등에 배포할 때 주석을 풀고 사용하세요.
+  # deploy:
+  #   name: Deploy to Production
+  #   needs: build-and-lint
+  #   runs-on: ubuntu-latest
+  #   if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+  #   steps:
+  #     - name: 📥 Download Build Artifact
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: dist
+  #         path: dist
+  #
+  #     # 예시: AWS S3 배포
+  #     # - name: Deploy to AWS S3
+  #     #   env:
+  #     #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #     #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #     #   run: aws s3 sync dist s3://my-bucket-name --delete

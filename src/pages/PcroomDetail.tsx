@@ -1,4 +1,3 @@
-// src/components/PcroomDashboardLayout.tsx
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,6 +5,7 @@ import api from "@/api/axiosInstance";
 import { BottomNav } from "@/components/BottomNav";
 import { Navigation } from "@/components/Navigation";
 import PcroomSeatMap from "@/components/PcroomSeatMap";
+import { usePcroomInfo, usePcroomUtilization, usePcroomNotices, useFavorites } from "@/hooks/queries";
 
 interface Notice {
   id: number;
@@ -27,95 +27,24 @@ const PcroomDetail = () => {
   const { id } = useParams<{ id: string }>();
   const pcroomId = Number(id);
 
-  const [loading, setLoading] = useState(true);
-  const [utilization, setUtilization] = useState(0);
-  const [favorites, setFavorites] = useState<Favorite[]>([]);
-  const [notices, setNotices] = useState<Notice[]>([]);
-  const [nameOfPcroom, setNameOfPcroom] = useState("");
-  const [totalSeats, setTotalSeats] = useState(0);
-  const [occupiedSeats, setOccupiedSeats] = useState(0);
+  const { data: pcroomInfo, isLoading: isInfoLoading } = usePcroomInfo(pcroomId);
+  const { data: utilizationData, isLoading: isUtilLoading } = usePcroomUtilization(pcroomId);
+  const { data: noticesData = [], isLoading: isNoticesLoading } = usePcroomNotices(pcroomId);
+  const { data: favoritesData = [] } = useFavorites();
 
+  const loading = isInfoLoading || isUtilLoading || isNoticesLoading;
+
+  const nameOfPcroom = pcroomInfo?.nameOfPcroom ?? "이름 없음";
+  const utilization = utilizationData?.utilization ?? 0;
+  const totalSeats = utilizationData?.seatCount ?? pcroomInfo?.seatCount ?? 0;
+  const occupiedSeats = utilizationData?.usedSeatCount ?? 0;
   const emptySeats = totalSeats - occupiedSeats;
+  const notices = noticesData;
+  const favorites = favoritesData;
 
-  /** 공통 안전 API 호출 */
-  const safeApiGet = async (url: string, config = {}) => {
-    if (!token) return null;
-    try {
-      const res = await api.get(url, config);
-      return res.data;
-    } catch (err) {
-      console.error(`GET ${url} 실패`, err);
-      return null;
-    }
-  };
-
-  /** ✅ 피시방 기본 정보 조회 */
-  const fetchPcroomInfo = async () => {
-    const res = await safeApiGet(`/pcrooms/pcroomInfo/${pcroomId}`);
-    if (res) {
-      setNameOfPcroom(res.nameOfPcroom ?? "이름 없음");
-      setTotalSeats(res.seatCount ?? 0);
-    }
-  };
-
-  /** 즐겨찾기 + 가동률 조회 */
-  const fetchFavorites = async () => {
-    const data = await safeApiGet("/favorites");
-    if (!Array.isArray(data)) return setFavorites([]);
-
-    const favoritesWithUtil = await Promise.all(
-      data.map(async (fav: Favorite) => {
-        const utilRes = await safeApiGet(`/pcrooms/${fav.pcroomId}/utilization`);
-        return {
-          ...fav,
-          utilization: utilRes?.utilization ?? 0,
-          totalSeats: utilRes?.seatCount ?? 0,
-          occupiedSeats: utilRes?.usedSeatCount ?? 0,
-        };
-      })
-    );
-
-    setFavorites(favoritesWithUtil.sort((a, b) => b.pcroomId - a.pcroomId));
-  };
-
-  /** 현재 피시방 가동률 */
-  const fetchUtilization = async () => {
-    const res = await safeApiGet(`/pcrooms/${pcroomId}/utilization`);
-    if (res) {
-      setUtilization(res.utilization ?? 0);
-      setTotalSeats(res.seatCount ?? totalSeats);
-      setOccupiedSeats(res.usedSeatCount ?? 0);
-    } else {
-      setUtilization((occupiedSeats / totalSeats) * 100);
-    }
-  };
-
-  /** 공지사항 */
-  const fetchNotices = async () => {
-    const res = await safeApiGet(`/notices/${pcroomId}`);
-    if (Array.isArray(res)) setNotices(res);
-    else setNotices([]);
-  };
-
-  /** 초기 데이터 */
   useEffect(() => {
-    if (!token || !pcroomId) {
-      setLoading(false);
-      return;
-    }
-
-    const loadAll = async () => {
-      await Promise.all([
-        fetchPcroomInfo(),
-        fetchUtilization(),
-        fetchFavorites(),
-        fetchNotices(),
-      ]);
-      setLoading(false);
-    };
-
-    loadAll();
-  }, [token, pcroomId]);
+    if (!token) navigate("/auth");
+  }, [token, navigate]);
 
   /** 가동률 색상 계산 */
   const utilizationColor = (() => {

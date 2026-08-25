@@ -7,6 +7,7 @@ import { BottomNav } from "@/components/BottomNav";
 import api from "@/api/axiosInstance";
 import { useUser } from "@/context/UserProvider";
 import { Plus, X } from "lucide-react";
+import { usePcrooms, useFavorites, useAddFavorite, useRemoveFavorite } from "@/hooks/queries";
 
 interface Pcroom {
     pcroomId: number;
@@ -22,74 +23,37 @@ interface Favorite {
 const PcroomSearch = () => {
     const { user } = useUser();
     const navigate = useNavigate();
-    const [pcrooms, setPcrooms] = useState<Pcroom[]>([]);
-    const [favorites, setFavorites] = useState<Favorite[]>([]);
     const [search, setSearch] = useState("");
-    const [loading, setLoading] = useState(false);
-    const [favLoading, setFavLoading] = useState(false);
+    const [debouncedSearch, setDebouncedSearch] = useState("");
     const [showModal, setShowModal] = useState(false);
     const token = localStorage.getItem("jwt");
 
+    const { data: pcrooms = [], isLoading: loading } = usePcrooms(debouncedSearch);
+    const { data: favorites = [], isLoading: favLoading } = useFavorites(1);
+    const { mutate: addFavoriteMutate } = useAddFavorite();
+    const { mutate: removeFavoriteMutate } = useRemoveFavorite();
+
     useEffect(() => {
         if (!token) navigate("/auth");
-        else fetchFavorites();
     }, [token, navigate]);
 
-    const safeApiGet = async (url: string, config = {}) => {
-        if (!token) return null;
-        try {
-            const res = await api.get(url, config);
-            return res.data;
-        } catch (err: any) {
-            console.error(err);
-            if (err.response?.status === 401) {
-                localStorage.removeItem("jwt");
-                navigate("/auth");
-            }
-            return null;
-        }
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedSearch(search);
+        }, 300);
+        return () => clearTimeout(handler);
+    }, [search]);
+
+    const handleSearch = () => {
+        setDebouncedSearch(search);
     };
 
-    const fetchFavorites = async () => {
-        setFavLoading(true);
-        const data = await safeApiGet("/favorites");
-        if (Array.isArray(data)) setFavorites(data);
-        else setFavorites([]);
-        setFavLoading(false);
+    const addFavorite = (pcroomId: number) => {
+        addFavoriteMutate(pcroomId);
     };
 
-    const handleSearch = async () => {
-        if (!search.trim()) return;
-        setLoading(true);
-        const data = await safeApiGet("/pcrooms", { params: { name: search } });
-        if (Array.isArray(data)) setPcrooms(data);
-        else if (data?.pcrooms && Array.isArray(data.pcrooms)) setPcrooms(data.pcrooms);
-        else setPcrooms([]);
-        setLoading(false);
-    };
-
-    // ✅ 수정된 부분: 낙관적 업데이트 + 모달 유지 + 검색결과 즉시 제거
-    const addFavorite = async (pcroomId: number) => {
-        // 클릭 즉시 목록에서 제거 (UI 반응 빠르게)
-        setPcrooms((prev) => prev.filter((p) => p.pcroomId !== pcroomId));
-
-        try {
-            await api.post(`/favorites/${pcroomId}`);
-            fetchFavorites(); // 즐겨찾기 목록 갱신
-        } catch (err) {
-            console.error(err);
-            fetchFavorites();
-            handleSearch(); // 실패 시 검색 결과 복원
-        }
-    };
-
-    const removeFavorite = async (pcroomId: number) => {
-        try {
-            await api.delete(`/favorites/${pcroomId}`);
-            fetchFavorites();
-        } catch (err) {
-            console.error(err);
-        }
+    const removeFavorite = (pcroomId: number) => {
+        removeFavoriteMutate(pcroomId);
     };
 
     return (

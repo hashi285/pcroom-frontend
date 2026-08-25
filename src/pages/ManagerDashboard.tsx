@@ -1,4 +1,3 @@
-// src/pages/ManagerDashboard.tsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
@@ -8,6 +7,7 @@ import { useUser } from "@/context/UserProvider";
 import api from "@/api/axiosInstance";
 import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
+import { usePcrooms, useManagerFavorites, useManagerUtilization, useAddManagerFavorite, useRemoveManagerFavorite } from "@/hooks/queries";
 
 interface ManagerFavorite {
   pcroomId: number;
@@ -22,79 +22,39 @@ const ManagerDashboard = () => {
   const navigate = useNavigate();
   const token = localStorage.getItem("jwt");
 
-  const [pcrooms, setPcrooms] = useState<ManagerFavorite[]>([]);
-  const [utilizationData, setUtilizationData] = useState<ManagerFavorite[]>([]);
-  const [searchResults, setSearchResults] = useState<ManagerFavorite[]>([]);
   const [search, setSearch] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
+
+  const { data: pcrooms = [], isLoading: isPcroomsLoading } = useManagerFavorites();
+  const { data: utilizationData = [], isLoading: isUtilLoading } = useManagerUtilization(24);
+  const { data: searchResults = [], isLoading: isSearchLoading } = usePcrooms(debouncedSearch);
+  const { mutate: addFavoriteMutate } = useAddManagerFavorite();
+  const { mutate: removeFavoriteMutate } = useRemoveManagerFavorite();
+
+  const loading = isPcroomsLoading || isUtilLoading;
 
   useEffect(() => {
     if (!token) navigate("/auth");
     else if (user?.role !== "ADMIN" && user?.role !== "OWNER") navigate("/dashboard");
   }, [token, user, navigate]);
 
-  const safeApiGet = async (url: string, config = {}) => {
-    if (!token) return null;
-    try {
-      const res = await api.get(url, config);
-      return res.data;
-    } catch (err: any) {
-      console.error(err);
-      if (err.response?.status === 401) {
-        localStorage.removeItem("jwt");
-        navigate("/auth");
-      }
-      return null;
-    }
-  };
-
-  const fetchPcrooms = async () => {
-    const data = await safeApiGet("/manager-favorites/favorite");
-    setPcrooms(Array.isArray(data) ? data : []);
-  };
-
-  const fetchUtilization = async () => {
-    setLoading(true);
-    const data = await safeApiGet("/manager-favorites?hours=24");
-    setUtilizationData(Array.isArray(data) ? data : []);
-    setLoading(false);
-  };
-
-  const handleSearch = async () => {
-    const trimmed = search.trim();
-    if (!trimmed) return setSearchResults([]);
-    const data = await safeApiGet("/pcrooms", { params: { name: trimmed } });
-    setSearchResults(Array.isArray(data) ? data : []);
-  };
-
-  const addFavorite = async (pcroomId: number) => {
-    try {
-      await api.post(`/manager-favorites/${pcroomId}`);
-      fetchPcrooms();
-      fetchUtilization();
-      setSearchResults(prev => prev.filter(pc => pc.pcroomId !== pcroomId));
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const removeFavorite = async (pcroomId: number) => {
-    try {
-      await api.delete(`/manager-favorites/${pcroomId}`);
-      fetchPcrooms();
-      fetchUtilization();
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   useEffect(() => {
-    if (token) {
-      fetchPcrooms();
-      fetchUtilization();
-    }
-  }, [token]);
+    const handler = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(handler);
+  }, [search]);
+
+  const handleSearch = () => {
+    setDebouncedSearch(search);
+  };
+
+  const addFavorite = (pcroomId: number) => {
+    addFavoriteMutate(pcroomId);
+  };
+
+  const removeFavorite = (pcroomId: number) => {
+    removeFavoriteMutate(pcroomId);
+  };
 
   const groupByHour = (data: ManagerFavorite[]) =>
     data.reduce<Record<string, ManagerFavorite[]>>((acc, pc) => {

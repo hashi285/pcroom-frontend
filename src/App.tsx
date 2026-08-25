@@ -28,11 +28,11 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <UserProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
+    <BrowserRouter>
+      <UserProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
           {/* Suspense로 lazy component fallback 처리 */}
           <Suspense fallback={<div>Loading...</div>}>
             <Routes>
@@ -112,9 +112,9 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
-        </BrowserRouter>
-      </TooltipProvider>
-    </UserProvider>
+        </TooltipProvider>
+      </UserProvider>
+    </BrowserRouter>
   </QueryClientProvider>
 );
 

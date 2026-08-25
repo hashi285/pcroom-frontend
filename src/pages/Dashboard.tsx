@@ -1,4 +1,3 @@
-// src/pages/Dashboard.tsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
@@ -8,6 +7,8 @@ import { useUser } from "@/context/UserProvider";
 import api from "@/api/axiosInstance";
 import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
+import { getToken } from "@/lib/tokenManager";
+import { usePcrooms, useFavorites, useAddFavorite } from "@/hooks/queries";
 
 interface Favorite {
   pcroomId: number;
@@ -27,128 +28,51 @@ const Dashboard = () => {
   const { user } = useUser();
   const navigate = useNavigate();
 
-  const [pcrooms, setPcrooms] = useState<Pcroom[]>([]);
-  const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [search, setSearch] = useState("");
-  const [loading, setLoading] = useState(true);
-  const token = localStorage.getItem("jwt");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const token = getToken();
   const [showModal, setShowModal] = useState(false);
 
   const [seatType, setSeatType] = useState("1");
   const [seatDropdownOpen, setSeatDropdownOpen] = useState(false);
 
+  // React Query Hooks 사용
+  const { data: pcrooms = [], isLoading: isLoadingPcrooms } = usePcrooms(debouncedSearch);
+  const { data: favorites = [], isLoading: isLoadingFavorites } = useFavorites(Number(seatType));
+  const { mutate: addFavoriteMutate } = useAddFavorite();
+
+  // 검색어 디바운싱 처리 (타이핑할 때마다 API 호출 방지)
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [search]);
+
   useEffect(() => {
     if (!token) {
       navigate("/auth");
-      return;
     }
-  }, [token, user, navigate]);
+  }, [token, navigate]);
 
-  const safeApiGet = async (url: string, config: any = {}) => {
-    if (!token) return null;
-    try {
-      const res = await api.get(url, config);
-      return res.data;
-    } catch (err: any) {
-      console.error(err);
-      if (err.response?.status === 401) {
-        localStorage.removeItem("jwt");
-        navigate("/auth");
-      }
-      return null;
-    }
+  const addFavorite = (pcroomId: number) => {
+    addFavoriteMutate(pcroomId);
   };
 
-  const addFavorite = async (pcroomId: number) => {
-    setPcrooms((prev) => prev.filter((p) => p.pcroomId !== pcroomId));
-
-    try {
-      await api.post(`/favorites/${pcroomId}`);
-      // 추가 후 현재 선택된 seatType 기준으로 재조회
-      fetchFavorites();
-    } catch (err) {
-      console.error(err);
-      fetchFavorites();
-      handleSearch();
-    }
-  };
-
-  const handleSearch = async () => {
-    if (!search.trim()) return;
-    setLoading(true);
-    const data = await safeApiGet("/pcrooms", { params: { name: search } });
-    if (Array.isArray(data)) setPcrooms(data);
-    else if (data?.pcrooms && Array.isArray(data.pcrooms)) setPcrooms(data.pcrooms);
-    else setPcrooms([]);
-    setLoading(false);
+  const handleSearch = () => {
+    setDebouncedSearch(search);
   };
 
   // 인원 수 → 아이콘 매핑 함수
-const getSeatIcon = (type: string) => {
-  const count = Number(type);
-
-  if (count === 1) return "person";
-  if (count === 2) return "person_2";
-  if (count === 3) return "group";
-  return "groups"; // 4~10명
-};
-
-
-  const fetchPcrooms = async () => {
-    const data = await safeApiGet("/pcrooms");
-    if (Array.isArray(data)) setPcrooms(data);
-    else if (data?.pcrooms && Array.isArray(data.pcrooms)) setPcrooms(data.pcrooms);
-    else setPcrooms([]);
+  const getSeatIcon = (type: string) => {
+    const count = Number(type);
+    if (count === 1) return "person";
+    if (count === 2) return "person_2";
+    if (count === 3) return "group";
+    return "groups"; // 4~10명
   };
 
-  /**
-   * fetchFavorites
-   * - 변경: 새로운 API 규격에 맞춰 partySize 쿼리 파라미터를 전달
-   * - 응답이 간단한 배열([{ pcroomId, nameOfPcroom }, ...])일 수 있으므로,
-   *   기존 가동률 호출을 유지해 추가 정보를 채웁니다.
-   */
-  const fetchFavorites = async () => {
-    setLoading(true);
-    // partySize를 숫자로 전달
-    const partySize = Number(seatType) || 1;
-    const data = await safeApiGet("/favorites", { params: { partySize } });
-
-    if (Array.isArray(data)) {
-      // data가 [{pcroomId, nameOfPcroom}, ...] 형식으로 올 것을 예상
-      const favoritesWithUtil = await Promise.all(
-        data.map(async (fav: any) => {
-          // 기존과 동일하게 상세 가동률을 따로 조회
-          const utilRes = await safeApiGet(`/pcrooms/${fav.pcroomId}/utilization`);
-          return {
-            pcroomId: fav.pcroomId,
-            nameOfPcroom: fav.nameOfPcroom ?? fav.pcroomName ?? "이름 없음",
-            utilization: utilRes?.utilization ?? 0,
-            seatCount: utilRes?.seatCount ?? 0,
-            usedSeatCount: utilRes?.usedSeatCount ?? 0,
-          } as Favorite;
-        })
-      );
-      setFavorites(favoritesWithUtil.sort((a, b) => b.pcroomId - a.pcroomId));
-    } else {
-      setFavorites([]);
-    }
-    setLoading(false);
-  };
-
-  // 초기 로드: pcrooms + favorites (현재 seatType 기준)
-  useEffect(() => {
-    if (token) {
-      fetchPcrooms();
-      fetchFavorites();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
-
-  // seatType이 바뀌면 favorites 재조회
-  useEffect(() => {
-    if (token) fetchFavorites();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [seatType]);
+  const loading = isLoadingPcrooms || isLoadingFavorites;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">

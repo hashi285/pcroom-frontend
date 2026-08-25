@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import api from "@/api/axiosInstance";
+import { useUser } from "@/context/UserProvider";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -17,22 +18,19 @@ const Auth = () => {
 
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { login } = useUser();
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // 로그인 시 기존 JWT 초기화
-      localStorage.removeItem("jwt");
-
       if (isLogin) {
         const res = await api.post("/login", { email, password });
         const { token, role } = res.data;
         
-
-        // 새 토큰 저장
-        localStorage.setItem("jwt", token);
+        // Use context login method to set token and user state
+        login(token);
 
         if (role === "ADMIN" || role === "OWNER") navigate("/manager-dashboard");
         else navigate("/dashboard");
