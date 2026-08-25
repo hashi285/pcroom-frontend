@@ -41,10 +41,11 @@ const Auth = () => {
 
         setIsLogin(true); // 회원가입 후 로그인 화면으로
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: string }; message?: string };
       toast({
         title: "Error",
-        description: err.response?.data || err.message,
+        description: error.response?.data || error.message || "An error occurred",
         variant: "destructive",
       });
     } finally {

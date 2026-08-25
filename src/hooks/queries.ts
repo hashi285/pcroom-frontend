@@ -40,7 +40,7 @@ export const useFavorites = (partySize: number = 1) => {
       
       if (Array.isArray(data)) {
         const favoritesWithUtil = await Promise.all(
-          data.map(async (fav: any) => {
+          data.map(async (fav: { pcroomId: number; nameOfPcroom?: string; pcroomName?: string }) => {
             try {
               const utilRes = await api.get(`/pcrooms/${fav.pcroomId}/utilization`);
               return {

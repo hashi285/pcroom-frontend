@@ -28,24 +28,23 @@ const CompetitorUtilizationDetail = () => {
     const navigate = useNavigate();
     const { pcroomId: pcroomIdPathParam } = useParams();
 
-    const fetchHistory = async () => {
-        try {
-            const url = `/manager-favorites/detail?hours=24${
-                pcroomIdPathParam ? `&pcroomId=${pcroomIdPathParam}` : ""
-            }`;
-
-            const res = await api.get(url);
-            setData(res.data || []);
-
-            console.log("Fetched data:", res.data);
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     useEffect(() => {
+        const fetchHistory = async () => {
+            try {
+                const url = `/manager-favorites/detail?hours=24${
+                    pcroomIdPathParam ? `&pcroomId=${pcroomIdPathParam}` : ""
+                }`;
+
+                const res = await api.get(url);
+                setData(res.data || []);
+                console.log("Fetched data:", res.data);
+            } catch (e) {
+                console.error(e);
+            } finally {
+                setLoading(false);
+            }
+        };
+
         const jwt = localStorage.getItem("jwt");
         if (!jwt) {
             navigate("/auth", { replace: true });
@@ -169,7 +168,7 @@ const CompetitorUtilizationDetail = () => {
                                             />
                                             <YAxis domain={[0, 100]} />
                                             <Tooltip
-                                                formatter={(value: any) => [
+                                                formatter={(value: number) => [
                                                     `${value.toFixed(2)}%`,
                                                     "가동률",
                                                 ]}
